@@ -7,6 +7,7 @@
 #include "em_gpio.h"
 
 #include "usb_callbacks.h"
+#include "main.h"
 
 #define BUFFERSIZE 512
 
@@ -34,5 +35,21 @@ int dataSentCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remai
 
 int dataReceivedCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remaining) {
 	/* Called whenever a data transfe (host to device) completes (succeeds or fails) */
-	return USB_STATUS_OK;
+
+  /* Remove warnings for unused variables */
+  (void)xferred;
+  (void)remaining;
+
+  if ( status == USB_STATUS_OK ) {
+    if (strcmp((char*) receiveBuffer, "run") == 0) {
+      if (state.mcu_state == IDLE) {
+	/* Wake the MCU and start transfer */
+	state.mcu_state = RUN;
+      } else {
+	/* ERROR */
+      }
+    }
+  }
+
+  return USB_STATUS_OK;
 }
