@@ -17,7 +17,7 @@
 #include "main.h"
 
 #define BUFFER_SIZE 64
-#define NUMBER_OF_IMAGES
+#define NUMBER_OF_IMAGES 1024
 
 state_t state;
 int* buffer;
@@ -86,8 +86,7 @@ void mcu_chill() {
 void mcu_run_loop() {
   /* Recieve data from FPGA and send it to PC when transfer is done */
 
-
-  for(int i = 0; i < NUMBER_OF_PICTURES; i += 4) {
+  for(int i = 0; i < NUMBER_OF_IMAGES; i += 4) {
     // Set READY high
     GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
 
@@ -95,87 +94,40 @@ void mcu_run_loop() {
     // FIX: Change to interrupt 
     while((int)GPIO_PinOutGet(E_BANK_PORT, PIN_VALID) == 0);
 
+    // One classification for every 4 bits
     int classification = -1;
     int bit0, bit1, bit2, bit3;
 
-    // Read bits ...
-    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA0);
-    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA1);
-    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA2);
-    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA3);
+    for (int j = 0; j < 4; i++) {
+      // Read bits ...
+      bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[0 + j*4]);
+      bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[1 + j*4]);
+      bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[2 + j*4]);
+      bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[3 + j*4]); 
     
-    // And concatinate
-    classification = bit0;
-    classification |= (bit1 << 1);
-    classification |= (bit2 << 2);
-    classification |= (bit3 << 3);
+      // And concatinate
+      classification = bit0;
+      classification |= (bit1 << 1);
+      classification |= (bit2 << 2);
+      classification |= (bit3 << 3);
 
-    buffer[i] = classification;
-
-    // Do it three more times for the other data lines
-    classification = -1;
-    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA4);
-    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA5);
-    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA6);
-    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA7);
-    classification = bit0;
-    classification |= (bit1 << 1);
-    classification |= (bit2 << 2);
-    classification |= (bit3 << 3);
-    buffer[i+1] = classification;
-
-    classification = -1;
-    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA8);
-    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA9);
-    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA10);
-    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA11);
-    classification = bit0;
-    classification |= (bit1 << 1);
-    classification |= (bit2 << 2);
-    classification |= (bit3 << 3);
-    buffer[i+2] = classification;
-
-    classification = -1;
-    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA12);
-    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA13);
-    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA14);
-    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA15);
-    classification = bit0;
-    classification |= (bit1 << 1);
-    classification |= (bit2 << 2);
-    classification |= (bit3 << 3);
-    buffer[i+3] = classification;    
+      buffer[i] = classification;
+      
+    }
     
-    /* buffer[i+0] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA0); */
-    /* buffer[i+1] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA1); */
-    /* buffer[i+2] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA2); */
-    /* buffer[i+3] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA3); */
-
-    /* buffer[i+4] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA4); */
-    /* buffer[i+5] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA5); */
-    /* buffer[i+6] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA6); */
-    /* buffer[i+7] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA7); */
-
-    /* buffer[i+8] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA8); */
-    /* buffer[i+9] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA9); */
-    /* buffer[i+10] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA10); */
-    /* buffer[i+11] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA11); */
-
-    /* buffer[i+12] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA12); */
-    /* buffer[i+13] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA13); */
-    /* buffer[i+14] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA14); */
-    /* buffer[i+15] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA15); */
-
     // Set ACK high
     GPIO_PinOutSet(E_BANK_PORT, PIN_ACK);
+
     // Wait some cycles
-    sleep(1000);
+    // sleep();
+    
     // Set ACK low
     GPIO_PinOutClear(E_BANK_PORT, PIN_ACK);
     
     // Repeat
   }
-  
+
+  // Transfer back to PC
   
   // Finished
   state.mcu_state = IDLE;
