@@ -13,6 +13,7 @@
 #include "ebi_control.h"
 #include "led_control.h"
 #include "usb_callbacks.h"
+#include "gpio_control.h"
 #include "main.h"
 
 #define BUFFER_SIZE 64
@@ -28,9 +29,11 @@ int main(void)
   /* Enable HFXO */
   CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
   
-  setupEBI();
-  setupLED();
-  setupUSB();
+  /* setupEBI(); */
+  /* setupLED(); */
+  /* setupUSB(); */
+
+  setupGPIO();
 
   /* Buffer which is used to send and receive data */
   buffer = (int*)malloc(BUFFER_SIZE * sizeof(int));
@@ -44,8 +47,7 @@ int main(void)
         break;
       case RUN:
         // Get from FPGA and send to PC
-        //mcu_run();
-	test_fpga_connection();
+        mcu_run();
         break;
       case TESTRUN:
         mcu_test_run();
@@ -81,7 +83,13 @@ void mcu_chill() {
 }
 
 void mcu_run() {
-  // Do stuff
+  /* Recieve data from FPGA and send it to PC when transfer is done */
+  
+  // Set READY high
+  GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
+  
+
+  
   
   // Finished
   state.mcu_state = IDLE;

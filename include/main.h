@@ -29,6 +29,7 @@ void mcu_test_run();
 void test_fpga_connection();
 
 extern state_t state;
+extern int* buffer;
 
 #endif
 
