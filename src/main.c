@@ -7,6 +7,7 @@
 #include "em_cmu.h"
 #include "em_emu.h"
 #include "em_usb.h"
+#include "em_ebi.h"
 
 #include "usb_control.h"
 #include "ebi_control.h"
