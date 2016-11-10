@@ -93,6 +93,7 @@ INCLUDEPATHS += -Isrc -Iinclude
 
 CSRC := $(addprefix $(SDK_PATH), \
 /Device/SiliconLabs/EFM32GG/Source/system_efm32gg.c \
+/eblib/src/em_ebi.c \
 /emlib/src/em_assert.c \
 /emlib/src/em_system.c \
 /emlib/src/em_gpio.c \
