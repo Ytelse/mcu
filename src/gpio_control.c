@@ -14,6 +14,24 @@ const int PIN_DATA1 = 4;
 const int PIN_DATA2 = 5;
 const int PIN_DATA3 = 6;
 
+const int PIN_DATA4 = 7;
+const int PIN_DATA5 = 8;
+const int PIN_DATA6 = 9;
+const int PIN_DATA7 = 10;
+
+const int PIN_DATA8 = 11;
+const int PIN_DATA9 = 12;
+const int PIN_DATA10 = 13;
+const int PIN_DATA11 = 14;
+
+const int PIN_DATA12 = 15;
+const int PIN_DATA13 = 16;
+const int PIN_DATA14 = 17;
+const int PIN_DATA15 = 18;
+
+
+
+
 void setupGPIO() {
   gpio_init();
 
@@ -39,5 +57,20 @@ void gpio_init() {
   GPIO_PinModeSet(E_BANK_PORT, PIN_DATA1, gpioModePushPull, 0);
   GPIO_PinModeSet(E_BANK_PORT, PIN_DATA2, gpioModePushPull, 0);
   GPIO_PinModeSet(E_BANK_PORT, PIN_DATA3, gpioModePushPull, 0);
+
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA4, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA5, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA6, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA7, gpioModePushPull, 0);
+
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA8, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA9, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA10, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA11, gpioModePushPull, 0);
+
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA12, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA13, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA14, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_DATA15, gpioModePushPull, 0);
 
 }

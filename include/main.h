@@ -24,7 +24,7 @@ typedef struct state {
 
 void init_state();
 void mcu_chill();
-void mcu_run();
+void mcu_run_loop();
 void mcu_test_run();
 void test_fpga_connection();
 

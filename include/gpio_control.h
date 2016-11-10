@@ -16,4 +16,17 @@ extern const int PIN_DATA1;
 extern const int PIN_DATA2;
 extern const int PIN_DATA3;
 
+extern const int PIN_DATA;
+extern const int PIN_DATA;
+extern const int PIN_DATA;
+extern const int PIN_DATA7;
+extern const int PIN_DATA8;
+extern const int PIN_DATA9;
+extern const int PIN_DATA10;
+extern const int PIN_DATA11;
+extern const int PIN_DATA12;
+extern const int PIN_DATA13;
+extern const int PIN_DATA14;
+extern const int PIN_DATA15;
+
 #endif

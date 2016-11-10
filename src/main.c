@@ -17,6 +17,7 @@
 #include "main.h"
 
 #define BUFFER_SIZE 64
+#define NUMBER_OF_IMAGES
 
 state_t state;
 int* buffer;
@@ -36,7 +37,7 @@ int main(void)
   setupGPIO();
 
   /* Buffer which is used to send and receive data */
-  buffer = (int*)malloc(BUFFER_SIZE * sizeof(int));
+  buffer = (int*)malloc(NUMBER_OF_IMAGES * sizeof(int));
 
   init_state();
     
@@ -47,7 +48,7 @@ int main(void)
         break;
       case RUN:
         // Get from FPGA and send to PC
-        mcu_run();
+        mcu_run_loop();
         break;
       case TESTRUN:
         mcu_test_run();
@@ -82,13 +83,98 @@ void mcu_chill() {
   }
 }
 
-void mcu_run() {
+void mcu_run_loop() {
   /* Recieve data from FPGA and send it to PC when transfer is done */
-  
-  // Set READY high
-  GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
-  
 
+
+  for(int i = 0; i < NUMBER_OF_PICTURES; i += 4) {
+    // Set READY high
+    GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
+
+    // Check the valid signal
+    // FIX: Change to interrupt 
+    while((int)GPIO_PinOutGet(E_BANK_PORT, PIN_VALID) == 0);
+
+    int classification = -1;
+    int bit0, bit1, bit2, bit3;
+
+    // Read bits ...
+    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA0);
+    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA1);
+    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA2);
+    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA3);
+    
+    // And concatinate
+    classification = bit0;
+    classification |= (bit1 << 1);
+    classification |= (bit2 << 2);
+    classification |= (bit3 << 3);
+
+    buffer[i] = classification;
+
+    // Do it three more times for the other data lines
+    classification = -1;
+    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA4);
+    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA5);
+    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA6);
+    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA7);
+    classification = bit0;
+    classification |= (bit1 << 1);
+    classification |= (bit2 << 2);
+    classification |= (bit3 << 3);
+    buffer[i+1] = classification;
+
+    classification = -1;
+    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA8);
+    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA9);
+    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA10);
+    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA11);
+    classification = bit0;
+    classification |= (bit1 << 1);
+    classification |= (bit2 << 2);
+    classification |= (bit3 << 3);
+    buffer[i+2] = classification;
+
+    classification = -1;
+    bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA12);
+    bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA13);
+    bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA14);
+    bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA15);
+    classification = bit0;
+    classification |= (bit1 << 1);
+    classification |= (bit2 << 2);
+    classification |= (bit3 << 3);
+    buffer[i+3] = classification;    
+    
+    /* buffer[i+0] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA0); */
+    /* buffer[i+1] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA1); */
+    /* buffer[i+2] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA2); */
+    /* buffer[i+3] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA3); */
+
+    /* buffer[i+4] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA4); */
+    /* buffer[i+5] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA5); */
+    /* buffer[i+6] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA6); */
+    /* buffer[i+7] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA7); */
+
+    /* buffer[i+8] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA8); */
+    /* buffer[i+9] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA9); */
+    /* buffer[i+10] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA10); */
+    /* buffer[i+11] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA11); */
+
+    /* buffer[i+12] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA12); */
+    /* buffer[i+13] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA13); */
+    /* buffer[i+14] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA14); */
+    /* buffer[i+15] = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA15); */
+
+    // Set ACK high
+    GPIO_PinOutSet(E_BANK_PORT, PIN_ACK);
+    // Wait some cycles
+    sleep(1000);
+    // Set ACK low
+    GPIO_PinOutClear(E_BANK_PORT, PIN_ACK);
+    
+    // Repeat
+  }
   
   
   // Finished
@@ -111,26 +197,26 @@ void mcu_test_run() {
 
 // REFACTOR CODE AFTER HERE
 
-#define BANK0_BASE_ADDR 0x80000000
-#define BANK1_BASE_ADDR 0x84000000
-#define TEST_SIZE 16
+/* #define BANK0_BASE_ADDR 0x80000000 */
+/* #define BANK1_BASE_ADDR 0x84000000 */
+/* #define TEST_SIZE 16 */
 
-int ebi_read(int address) {
-  return *(volatile int*)(BANK1_BASE_ADDR + (address << 1));
-}
+/* int ebi_read(int address) { */
+/*   return *(volatile int*)(BANK1_BASE_ADDR + (address << 1)); */
+/* } */
 
-/* Read data from EBI and output something on LEDS / send data to PC */
-void test_fpga_connection() {
-  int data[16] = {0};
+/* /\* Read data from EBI and output something on LEDS / send data to PC *\/ */
+/* void test_fpga_connection() { */
+/*   int data[16] = {0}; */
 
   
-  for (int i = 0; i < TEST_SIZE; i++) {
-    data[i] = ebi_read(i);
-  }
+/*   for (int i = 0; i < TEST_SIZE; i++) { */
+/*     data[i] = ebi_read(i); */
+/*   } */
 
-  // Blink LEDS?
-  USBD_Write(EP_IN, data, sizeof(data), dataSentCallback);
+/*   // Blink LEDS? */
+/*   USBD_Write(EP_IN, data, sizeof(data), dataSentCallback); */
 
-}
+/* } */
 
 
