@@ -164,7 +164,7 @@ void mcu_run_loop() {
     int classification = -1;
     int bit0, bit1, bit2, bit3;
 
-    for (int j = 0; j < 4; i++) {
+    for (int j = 0; j < 4; j++) {
       // Read bits ...
       bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[0 + j*4]);
       bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[1 + j*4]);
