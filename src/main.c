@@ -102,7 +102,7 @@ void mcu_run_loop() {
   /* Recieve data from FPGA and send it to PC when transfer is done */
   for(int i = 0; i < NUMBER_OF_IMAGES; i += 4) {
     // Set READY high
-    GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
+    GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
 
     // Check the valid signal
     while(VALID == 0) {
@@ -116,10 +116,10 @@ void mcu_run_loop() {
 
     for (int j = 0; j < 4; j++) {
       // Read bits ...
-      bit0 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[0 + j*4]);
-      bit1 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[1 + j*4]);
-      bit2 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[2 + j*4]);
-      bit3 = (int)GPIO_PinOutGet(E_BANK_PORT, PIN_DATA_ARRAY[3 + j*4]);
+      bit0 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[0 + j*4].port, PIN_DATA_ARRAY[0 + j*4].pin);
+      bit1 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[1 + j*4].port, PIN_DATA_ARRAY[1 + j*4].pin);
+      bit2 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[2 + j*4].port, PIN_DATA_ARRAY[2 + j*4].pin);
+      bit3 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[3 + j*4].port, PIN_DATA_ARRAY[3 + j*4].pin);
     
       // And concatinate
       classification = bit0;
@@ -132,16 +132,17 @@ void mcu_run_loop() {
     }
     
     // Set ACK high
-    GPIO_PinOutSet(E_BANK_PORT, PIN_ACK);
+    GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
+    GPIO_PinOutSet(4,2);
 
     // Wait some cycles
-    Delay(100);
+    Delay(50);
     
     // Set ACK low
-    GPIO_PinOutClear(E_BANK_PORT, PIN_ACK);
-
+    GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+    GPIO_PinOutClear(4,2);
     // REMOVE FROM HERE  --------------
-    Delay(100);
+    Delay(50);
     // ---------------- TO HERE
     
     // Repeat
@@ -152,6 +153,7 @@ void mcu_run_loop() {
 
   // REMOVE FROM HERE -------------
   Delay(1000);
+  GPIO_PinModeSet(4, 3, gpioModePushPull, 0);
   GPIO_PinOutSet(4,3);
   // ---------------- TO HERE
   

@@ -3,33 +3,59 @@
 #include "gpio_control.h"
 #include "main.h"
 
-const int E_BANK_PORT =  4; // Should be bank E
 
-const int PIN_READY = 0;
-const int PIN_VALID = 1;
-const int PIN_ACK = 2;
+/* Non interfering pins for the STK */
+/* const port_pin_t PIN_READY = (port_pin_t){.port = gpioPortA, .pin = 2};  // D0 */
+/* const port_pin_t PIN_VALID = (port_pin_t){.port = gpioPortA, .pin = 3};  // D1 */
+/* const port_pin_t PIN_ACK   = (port_pin_t){.port = gpioPortA, .pin = 4}; // D2 */
 
-const int PIN_DATA0 = 3;
-const int PIN_DATA1 = 4;
-const int PIN_DATA2 = 5;
-const int PIN_DATA3 = 6;
+/* port_pin_t PIN_DATA_ARRAY[16]; */
 
-const int PIN_DATA4 = 7;
-const int PIN_DATA5 = 8;
-const int PIN_DATA6 = 9;
-const int PIN_DATA7 = 10;
+/* const port_pin_t PIN_DATA0 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A0 */
+/* const port_pin_t PIN_DATA1 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A1 */
+/* const port_pin_t PIN_DATA2 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A2 */
+/* const port_pin_t PIN_DATA3 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A3 */
 
-const int PIN_DATA8 = 11;
-const int PIN_DATA9 = 12;
-const int PIN_DATA10 = 13;
-const int PIN_DATA11 = 14;
+/* const port_pin_t PIN_DATA4 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A4 */
+/* const port_pin_t PIN_DATA5 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A5 */
+/* const port_pin_t PIN_DATA6 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A6 */
+/* const port_pin_t PIN_DATA7 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A7 */
 
-const int PIN_DATA12 = 15;
-const int PIN_DATA13 = 16;
-const int PIN_DATA14 = 17;
-const int PIN_DATA15 = 18;
+/* const port_pin_t PIN_DATA8 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A8 */
+/* const port_pin_t PIN_DATA9 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A9 */
+/* const port_pin_t PIN_DATA10 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A10 */
+/* const port_pin_t PIN_DATA11 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A11 */
 
-int PIN_DATA_ARRAY[16];
+/* const port_pin_t PIN_DATA12 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A12 */
+/* const port_pin_t PIN_DATA13 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A13 */
+/* const port_pin_t PIN_DATA14 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A14 */
+/* const port_pin_t PIN_DATA15 = (port_pin_t){.port = gpioPortE, .pin = 1}; // A15 */
+
+const port_pin_t PIN_READY = (port_pin_t){.port = gpioPortE, .pin = 8};  // D0
+const port_pin_t PIN_VALID = (port_pin_t){.port = gpioPortE, .pin = 9};  // D1
+const port_pin_t PIN_ACK   = (port_pin_t){.port = gpioPortE, .pin = 10}; // D2
+
+port_pin_t PIN_DATA_ARRAY[16];
+
+const port_pin_t PIN_DATA0 = (port_pin_t){.port = gpioPortA, .pin = 12}; // A0
+const port_pin_t PIN_DATA1 = (port_pin_t){.port = gpioPortA, .pin = 13}; // A1
+const port_pin_t PIN_DATA2 = (port_pin_t){.port = gpioPortA, .pin = 14}; // A2
+const port_pin_t PIN_DATA3 = (port_pin_t){.port = gpioPortB, .pin = 9};  // A3
+
+const port_pin_t PIN_DATA4 = (port_pin_t){.port = gpioPortB, .pin = 10}; // A4
+const port_pin_t PIN_DATA5 = (port_pin_t){.port = gpioPortC, .pin = 6};  // A5
+const port_pin_t PIN_DATA6 = (port_pin_t){.port = gpioPortC, .pin = 7};  // A6
+const port_pin_t PIN_DATA7 = (port_pin_t){.port = gpioPortE, .pin = 0};  // A7
+
+const port_pin_t PIN_DATA8 = (port_pin_t){.port = gpioPortE, .pin = 1};  // A8
+const port_pin_t PIN_DATA9 = (port_pin_t){.port = gpioPortE, .pin = 2};  // A9
+const port_pin_t PIN_DATA10 = (port_pin_t){.port = gpioPortE, .pin = 3}; // A10
+const port_pin_t PIN_DATA11 = (port_pin_t){.port = gpioPortE, .pin = 4}; // A11
+
+const port_pin_t PIN_DATA12 = (port_pin_t){.port = gpioPortE, .pin = 5}; // A12
+const port_pin_t PIN_DATA13 = (port_pin_t){.port = gpioPortE, .pin = 6}; // A13
+const port_pin_t PIN_DATA14 = (port_pin_t){.port = gpioPortE, .pin = 7}; // A14
+const port_pin_t PIN_DATA15 = (port_pin_t){.port = gpioPortC, .pin = 8}; // A15
 
 
 void setupGPIO() {
@@ -52,12 +78,12 @@ void gpio_init() {
   // --------------- TO HERE
   
   /* READY */
-  GPIO_PinModeSet(E_BANK_PORT, PIN_READY, gpioModePushPull, 0);
+  GPIO_PinModeSet(PIN_READY.port, PIN_READY.pin, gpioModePushPull, 0);
   
   /* VALID */
-  GPIO_PinModeSet(E_BANK_PORT, PIN_VALID, gpioModeInput, 0);
+  GPIO_PinModeSet(PIN_VALID.port, PIN_VALID.pin, gpioModeInput, 0);
   /* Valid should be an interrupt signal */
-  GPIO_IntConfig(E_BANK_PORT, PIN_VALID,
+  GPIO_IntConfig(PIN_VALID.port, PIN_VALID.pin,
 		 true, /* risingEdge */
   		 false, /* fallingEdge */
   		 true);  /* enable */
@@ -66,7 +92,7 @@ void gpio_init() {
   NVIC_EnableIRQ(GPIO_ODD_IRQn);
   
   /* ACK */
-  GPIO_PinModeSet(E_BANK_PORT, PIN_ACK, gpioModePushPull, 0);
+  GPIO_PinModeSet(PIN_ACK.port, PIN_ACK.pin, gpioModePushPull, 0);
   
   /* DATA */
   PIN_DATA_ARRAY[0] = PIN_DATA0; 
@@ -87,7 +113,7 @@ void gpio_init() {
   PIN_DATA_ARRAY[15] = PIN_DATA15;
 
   for (int i = 0; i < 16; i++) {
-    GPIO_PinModeSet(E_BANK_PORT, PIN_DATA_ARRAY[i], gpioModePushPull, 0);
+    GPIO_PinModeSet(PIN_DATA_ARRAY[i].port, PIN_DATA_ARRAY[i].pin, gpioModePushPull, 0);
   }
 
 }
