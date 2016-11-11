@@ -30,6 +30,8 @@ int main(void)
   
   /* Enable HFXO */
   CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
+
+  // This line is needed for Delay to work
   if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
 
 
@@ -38,13 +40,15 @@ int main(void)
   setupUSB();
 
   setupGPIO();
-  
+
+  // REMOVE FROM HERE
   GPIO_PinModeSet(4, 2, gpioModePushPull, 0);
   GPIO_PinOutClear(4, 2);
-
   GPIO_PinOutSet(4,2);
   Delay(1000);
   GPIO_PinOutClear(4, 2);
+  // TO HERE
+
   /* Buffer which is used to send and receive data */
   buffer = (int*)malloc(NUMBER_OF_IMAGES * sizeof(int));
 
@@ -137,10 +141,13 @@ void mcu_run_loop() {
     // Repeat
   }
 
+  // Transfer back to PC
+  USBD_Write(EP_IN, buffer, sizeof(buffer), dataSentCallback);
+
+  // REMOVE FROM HERE
   Delay(1000);
   GPIO_PinOutSet(4,2);
-
-  // Transfer back to PC
+  // TO HERE
   
   // Finished
   state.mcu_state = IDLE;
