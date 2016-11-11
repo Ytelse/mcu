@@ -42,14 +42,20 @@ void gpio_init() {
   /* Enable clocks */
   CMU_ClockEnable(cmuClock_HFPER, true);
   CMU_ClockEnable(cmuClock_GPIO, true);
-
-  /* Set PIN modes GPIO_PinModeSet(port, pin, mode, out) */
   
   /* READY */
   GPIO_PinModeSet(E_BANK_PORT, PIN_READY, gpioModePushPull, 0);
   
   /* VALID */
-  GPIO_PinModeSet(E_BANK_PORT, PIN_VALID, gpioModePushPull, 0);
+  GPIO_PinModeSet(E_BANK_PORT, PIN_VALID, gpioModeInput, 0);
+  /* Valid should be an interrupt signal */
+  GPIO_IntConfig(E_BANK_PORT, PIN_VALID,
+		 true, /* risingEdge */
+		 true, /* fallingEdge */
+		 true  /* enable */
+		 );
+  NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+  NVIC_EnableIRQ(GPIO_ODD_IRQn);
   
   /* ACK */
   GPIO_PinModeSet(E_BANK_PORT, PIN_ACK, gpioModePushPull, 0);
@@ -76,4 +82,14 @@ void gpio_init() {
     GPIO_PinModeSet(E_BANK_PORT, PIN_DATA_ARRAY[i], gpioModePushPull, 0);
   }
 
+}
+
+void GPIO_ODD_IRQHandler(void)
+{
+  /* Clear the interrupt flag */
+  GPIO->IFC = 1 << 9;
+
+  /* Maybe we should have a global VALID int which is set here and
+   * check it in the valid loop
+   */
 }

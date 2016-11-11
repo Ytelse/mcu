@@ -3,6 +3,7 @@
 
 void setupGPIO(void);
 void gpio_init(void);
+void GPIO_ODD_IRQHandler(void);
 
 extern const int E_BANK_PORT;
 extern const int E_BANK_PIN;

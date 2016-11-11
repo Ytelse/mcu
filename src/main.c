@@ -99,14 +99,15 @@ void mcu_chill() {
 
 void mcu_run_loop() {
   /* Recieve data from FPGA and send it to PC when transfer is done */
-
   for(int i = 0; i < NUMBER_OF_IMAGES; i += 4) {
     // Set READY high
     GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
 
     // Check the valid signal
-    // FIX: Change to interrupt 
-    /* while((int)GPIO_PinOutGet(E_BANK_PORT, PIN_VALID) == 0); */
+    // If this does not work, we can set a global VALID int on rising edge
+    while((int)GPIO_PinOutGet(E_BANK_PORT, PIN_VALID) == 0) {
+      mcu_chill();
+    }
 
     // One classification for every 4 bits
     int classification = -1;
