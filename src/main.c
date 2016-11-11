@@ -23,6 +23,8 @@
 state_t state;
 int* buffer;
 
+int VALID = 0;
+
 int main(void)
 {
   /* Chip errata */
@@ -41,13 +43,13 @@ int main(void)
 
   setupGPIO();
 
-  // REMOVE FROM HERE
+  // REMOVE FROM HERE ---------------
   GPIO_PinModeSet(4, 2, gpioModePushPull, 0);
   GPIO_PinOutClear(4, 2);
   GPIO_PinOutSet(4,2);
   Delay(1000);
   GPIO_PinOutClear(4, 2);
-  // TO HERE
+  // ---------------- TO HERE
 
   /* Buffer which is used to send and receive data */
   buffer = (int*)malloc(NUMBER_OF_IMAGES * sizeof(int));
@@ -57,7 +59,9 @@ int main(void)
   while(state.mcu_state != FINALIZE){
     switch(state.mcu_state) {
       case IDLE:
-        mcu_chill();
+	while(state.mcu_state == IDLE) {
+	  mcu_chill();
+	}
         break;
       case RUN:
         // Get from FPGA and send to PC
@@ -84,16 +88,13 @@ void init_state() {
 }
 
 void mcu_chill() {
-  /* GPIO_PinOutSet(4, 2); */
-  while(state.mcu_state == IDLE) {
-    if ( USBD_SafeToEnterEM2() ) {
-	/* Enter EM2 when in suspend or disconnected */
-	EMU_EnterEM2(true);
-    } 
-    else {
-	/* When USB is active we can sleep in EM1. */
-	EMU_EnterEM1();
-    }
+  if ( USBD_SafeToEnterEM2() ) {
+    /* Enter EM2 when in suspend or disconnected */
+    EMU_EnterEM2(true);
+  }
+  else {
+    /* When USB is active we can sleep in EM1. */
+    EMU_EnterEM1();
   }
 }
 
@@ -104,10 +105,10 @@ void mcu_run_loop() {
     GPIO_PinOutSet(E_BANK_PORT, PIN_READY);
 
     // Check the valid signal
-    // If this does not work, we can set a global VALID int on rising edge
-    while((int)GPIO_PinOutGet(E_BANK_PORT, PIN_VALID) == 0) {
+    while(VALID == 0) {
       mcu_chill();
     }
+    VALID = 0;
 
     // One classification for every 4 bits
     int classification = -1;
@@ -134,10 +135,14 @@ void mcu_run_loop() {
     GPIO_PinOutSet(E_BANK_PORT, PIN_ACK);
 
     // Wait some cycles
-    /* Delay(1000); */
+    Delay(100);
     
     // Set ACK low
     GPIO_PinOutClear(E_BANK_PORT, PIN_ACK);
+
+    // REMOVE FROM HERE  --------------
+    Delay(100);
+    // ---------------- TO HERE
     
     // Repeat
   }
@@ -145,13 +150,13 @@ void mcu_run_loop() {
   // Transfer back to PC
   USBD_Write(EP_IN, buffer, sizeof(buffer), dataSentCallback);
 
-  // REMOVE FROM HERE
+  // REMOVE FROM HERE -------------
   Delay(1000);
-  GPIO_PinOutSet(4,2);
-  // TO HERE
+  GPIO_PinOutSet(4,3);
+  // ---------------- TO HERE
   
   // Finished
-  state.mcu_state = IDLE;
+  state.mcu_state = IDLE; // Finalize or IDLE?
 }
 
 void mcu_test_run() {

@@ -1,6 +1,7 @@
 #include "em_gpio.h"
 #include "em_cmu.h"
 #include "gpio_control.h"
+#include "main.h"
 
 const int E_BANK_PORT =  4; // Should be bank E
 
@@ -33,7 +34,6 @@ int PIN_DATA_ARRAY[16];
 
 void setupGPIO() {
   gpio_init();
-
 }
 
 
@@ -42,6 +42,14 @@ void gpio_init() {
   /* Enable clocks */
   CMU_ClockEnable(cmuClock_HFPER, true);
   CMU_ClockEnable(cmuClock_GPIO, true);
+
+  // REMOVE FROM HERE ----------------------
+  /* Enable interrupt on push button 0 */
+  GPIO_PinModeSet(gpioPortB, 9, gpioModeInput, 0);
+  GPIO_IntConfig(gpioPortB, 9, false, true, true);
+  NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+  NVIC_EnableIRQ(GPIO_ODD_IRQn);
+  // --------------- TO HERE
   
   /* READY */
   GPIO_PinModeSet(E_BANK_PORT, PIN_READY, gpioModePushPull, 0);
@@ -51,9 +59,9 @@ void gpio_init() {
   /* Valid should be an interrupt signal */
   GPIO_IntConfig(E_BANK_PORT, PIN_VALID,
 		 true, /* risingEdge */
-		 true, /* fallingEdge */
-		 true  /* enable */
-		 );
+  		 false, /* fallingEdge */
+  		 true);  /* enable */
+  
   NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
   NVIC_EnableIRQ(GPIO_ODD_IRQn);
   
@@ -89,7 +97,6 @@ void GPIO_ODD_IRQHandler(void)
   /* Clear the interrupt flag */
   GPIO->IFC = 1 << 9;
 
-  /* Maybe we should have a global VALID int which is set here and
-   * check it in the valid loop
-   */
+  // The interrupt indicates that the MCU can start reading data
+  VALID = 1;
 }
