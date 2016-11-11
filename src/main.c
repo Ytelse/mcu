@@ -75,7 +75,7 @@ int main(void)
 
 
 void init_state() {
-  state.mcu_state = RUN;
+  state.mcu_state = RUN; // Should be IDLE in production
   state.run_state = READY;
 }
 

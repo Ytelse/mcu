@@ -2,7 +2,7 @@
 #include "em_cmu.h"
 #include "gpio_control.h"
 
-const int E_BANK_PORT =  0x0; // Set this to something correct
+const int E_BANK_PORT =  4; // Should be bank E
 
 const int PIN_READY = 0;
 const int PIN_VALID = 1;
