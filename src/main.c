@@ -29,7 +29,7 @@ int main(void)
 {
   /* Chip errata */
   CHIP_Init();
-  
+
   /* Enable HFXO */
   CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
 
@@ -43,19 +43,25 @@ int main(void)
 
   setupGPIO();
 
-  // REMOVE FROM HERE ---------------
+#ifdef STK
   GPIO_PinModeSet(4, 2, gpioModePushPull, 0);
   GPIO_PinOutClear(4, 2);
   GPIO_PinOutSet(4,2);
   Delay(1000);
   GPIO_PinOutClear(4, 2);
-  // ---------------- TO HERE
+#else /* PACMAN */
+  GPIO_PinModeSet(gpioPortD, 7, gpioModePushPull, 0);
+  GPIO_PinOutClear(gpioPortD, 7);
+  GPIO_PinOutSet(gpioPortD, 7);
+  Delay(1000);
+  GPIO_PinOutClear(gpioPortD, 7);
+#endif /* STK */
 
   /* Buffer which is used to send and receive data */
   buffer = (int*)malloc(NUMBER_OF_IMAGES * sizeof(int));
 
   init_state();
-    
+
   while(state.mcu_state != FINALIZE){
     switch(state.mcu_state) {
       case IDLE:
@@ -83,7 +89,7 @@ int main(void)
 
 
 void init_state() {
-  state.mcu_state = RUN; // Should be IDLE in production
+  state.mcu_state = RUN;
   state.run_state = READY;
 }
 
@@ -102,13 +108,18 @@ void mcu_run_loop() {
   /* Recieve data from FPGA and send it to PC when transfer is done */
   for(int i = 0; i < NUMBER_OF_IMAGES; i += 4) {
     // Set READY high
+#ifndef STK /* PACMAN */
     GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
+#endif /* STK */
 
     // Check the valid signal
     while(VALID == 0) {
       mcu_chill();
     }
+
+#ifndef STK /* PACMAN */
     VALID = 0;
+#endif /* STK */
 
     // One classification for every 4 bits
     int classification = -1;
@@ -120,7 +131,8 @@ void mcu_run_loop() {
       bit1 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[1 + j*4].port, PIN_DATA_ARRAY[1 + j*4].pin);
       bit2 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[2 + j*4].port, PIN_DATA_ARRAY[2 + j*4].pin);
       bit3 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[3 + j*4].port, PIN_DATA_ARRAY[3 + j*4].pin);
-    
+
+      // Remove this part if deinterleaving is done on PC
       // And concatinate
       classification = bit0;
       classification |= (bit1 << 1);
@@ -128,35 +140,44 @@ void mcu_run_loop() {
       classification |= (bit3 << 3);
 
       buffer[i+j] = classification;
-      
+
     }
-    
+
     // Set ACK high
+#ifndef STK /* PACMAN */
     GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
+    GPIO_PinOutSet(gpioPortD, 7);
+#else /* STK */
     GPIO_PinOutSet(4,2);
+#endif /* STK */
 
     // Wait some cycles
     Delay(50);
-    
+
     // Set ACK low
+#ifndef STK /* PACMAN */
     GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+    GPIO_PinOutClear(gpioPortD, 7);
+#else /* PACMAN */
     GPIO_PinOutClear(4,2);
-    // REMOVE FROM HERE  --------------
     Delay(50);
-    // ---------------- TO HERE
-    
+#endif /* STK */
+
     // Repeat
   }
 
   // Transfer back to PC
   USBD_Write(EP_IN, buffer, sizeof(buffer), dataSentCallback);
 
-  // REMOVE FROM HERE -------------
+#ifdef STK
   Delay(1000);
   GPIO_PinModeSet(4, 3, gpioModePushPull, 0);
   GPIO_PinOutSet(4,3);
-  // ---------------- TO HERE
-  
+#else /* PACMAN */
+  GPIO_PinModeSet(gpioPortD, 6, gpioModePushPull, 0);
+  GPIO_PinOutSet(gpioPortD, 6);
+#endif /* STK */
+
   // Finished
   state.mcu_state = IDLE; // Finalize or IDLE?
 }
