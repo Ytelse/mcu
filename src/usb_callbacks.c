@@ -11,7 +11,7 @@
 
 #define BUFFERSIZE 512
 
-/* Buffer to receive incoming messages. Needs to be 
+/* Buffer to receive incoming messages. Needs to be
  * WORD aligned and an integer number of WORDs large */
 STATIC_UBUF(receiveBuffer, BUFFERSIZE);
 
@@ -25,16 +25,27 @@ int setupCmd(const USB_Setup_TypeDef *setup) {
 }
 
 void stateChange(USBD_State_TypeDef oldState, USBD_State_TypeDef newState) {
-	/* Called whenever USB state chages */
+  /* Called whenever USB state chages */
+  if (newState == USBD_STATE_CONFIGURED)
+  {
+    /* Start waiting for the 'run' messages */
+    USBD_Read(EP_OUT, receiveBuffer, BUFFERSIZE, dataReceivedCallback);
+  }
 }
 
 int dataSentCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remaining) {
-	/* Called whenever a data transfer (device to host) completes (succeeds or fails) */
+  /* Called whenever a data transfer (device to host) completes (succeeds or fails) */
+#ifndef STK /* PACMAN */
+  GPIO_PinModeSet(gpioPortD, 5, gpioModePushPull, 0);
+  GPIO_PinOutClear(gpioPortD, 5);
+  GPIO_PinOutSet(gpioPortD, 5);
+#endif /* STK */
+
   	return USB_STATUS_OK;
 }
 
 int dataReceivedCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remaining) {
-	/* Called whenever a data transfe (host to device) completes (succeeds or fails) */
+  /* Called whenever a data transfe (host to device) completes (succeeds or fails) */
 
   /* Remove warnings for unused variables */
   (void)xferred;
@@ -49,6 +60,9 @@ int dataReceivedCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t r
 	/* ERROR */
       }
     }
+
+    /* Read the next message */
+    USBD_Read(EP_OUT, receiveBuffer, BUFFERSIZE, dataReceivedCallback);
   }
 
   return USB_STATUS_OK;
