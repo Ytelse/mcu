@@ -104,14 +104,14 @@ static const uint8_t configDesc[] __attribute__ ((aligned(4)))=
   0,                                    /* bInterval            */    
   
   
-  /*** Interrupt Endpoint Descriptor (IN) ***/
+  /*** Bulk Endpoint Descriptor (IN) ***/
   USB_ENDPOINT_DESCSIZE,                /* bLength              */
   USB_ENDPOINT_DESCRIPTOR,              /* bDescriptorType      */
   EP_IN,                                /* bEndpointAddress     */
-  USB_EPTYPE_INTR,                      /* bmAttributes         */
+  USB_EPTYPE_BULK,                      /* bmAttributes         */
   USB_MAX_EP_SIZE,                      /* wMaxPacketSize (LSB) */
   0,                                    /* wMaxPacketSize (MSB) */
-  1,                                    /* bInterval            */
+  0,                                    /* bInterval            */
    
 };
 
@@ -142,7 +142,7 @@ static const uint8_t bufferingMultiplier[ NUM_EP_USED + 1 ] =
 { 
   1,  /* Control */
   2,  /* Bulk */
-  1   /* Interrupt */
+  2   /* Bulk */
 };
 
 /* Define callbacks that are called by the USB stack on different events. */
