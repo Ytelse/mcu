@@ -55,7 +55,7 @@ int main(void)
   GPIO_PinOutSet(gpioPortD, 7);
   Delay(1000);
   GPIO_PinOutClear(gpioPortD, 7);
-#endif /* STK */
+#endif
 
   /* Buffer which is used to send and receive data */
   buffer = (int*)malloc(NUMBER_OF_IMAGES * sizeof(int));
@@ -110,7 +110,7 @@ void mcu_run_loop() {
     // Set READY high
 #ifndef STK /* PACMAN */
     GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
-#endif /* STK */
+#endif 
 
     // Check the valid signal
     while(VALID == 0) {
@@ -119,7 +119,7 @@ void mcu_run_loop() {
 
 #ifndef STK /* PACMAN */
     VALID = 0;
-#endif /* STK */
+#endif 
 
     // One classification for every 4 bits
     int classification = -1;
@@ -149,7 +149,7 @@ void mcu_run_loop() {
     GPIO_PinOutSet(gpioPortD, 7);
 #else /* STK */
     GPIO_PinOutSet(4,2);
-#endif /* STK */
+#endif
 
     // Wait some cycles
     Delay(50);
@@ -161,7 +161,7 @@ void mcu_run_loop() {
 #else /* PACMAN */
     GPIO_PinOutClear(4,2);
     Delay(50);
-#endif /* STK */
+#endif
 
     // Repeat
   }
@@ -176,7 +176,7 @@ void mcu_run_loop() {
 #else /* PACMAN */
   GPIO_PinModeSet(gpioPortD, 6, gpioModePushPull, 0);
   GPIO_PinOutSet(gpioPortD, 6);
-#endif /* STK */
+#endif
 
   // Finished
   state.mcu_state = IDLE; // Finalize or IDLE?

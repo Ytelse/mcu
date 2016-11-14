@@ -58,7 +58,7 @@ const port_pin_t PIN_DATA12 = (port_pin_t){.port = gpioPortE, .pin = 5}; // A12
 const port_pin_t PIN_DATA13 = (port_pin_t){.port = gpioPortE, .pin = 6}; // A13
 const port_pin_t PIN_DATA14 = (port_pin_t){.port = gpioPortE, .pin = 7}; // A14
 const port_pin_t PIN_DATA15 = (port_pin_t){.port = gpioPortC, .pin = 8}; // A15
-#endif /* STK */
+#endif
 
 void setupGPIO() {
   gpio_init();
@@ -77,12 +77,12 @@ void gpio_init() {
   GPIO_IntConfig(gpioPortB, 9, false, true, true);
   NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
   NVIC_EnableIRQ(GPIO_ODD_IRQn);
-#endif /* STK */
+#endif
 
   /* READY */
 #ifndef STK  /* PACMAN */
   GPIO_PinModeSet(PIN_READY.port, PIN_READY.pin, gpioModePushPull, 0);
-#endif /* STK */
+#endif
 
   /* VALID */
 #ifndef STK /* PACMAN */
@@ -95,12 +95,12 @@ void gpio_init() {
 
   NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
   NVIC_EnableIRQ(GPIO_ODD_IRQn);
-#endif /* STK */
+#endif
 
   /* ACK */
 #ifndef STK /* PACMAN */
   GPIO_PinModeSet(PIN_ACK.port, PIN_ACK.pin, gpioModePushPull, 0);
-#endif /* STK */
+#endif
 
   /* DATA */
   PIN_DATA_ARRAY[0] = PIN_DATA0;
@@ -124,7 +124,7 @@ void gpio_init() {
   for (int i = 0; i < 16; i++) {
     GPIO_PinModeSet(PIN_DATA_ARRAY[i].port, PIN_DATA_ARRAY[i].pin, gpioModePushPull, 0);
   }
-#endif /* STK */
+#endif
 
 }
 
