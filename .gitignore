@@ -37,3 +37,5 @@
 build
 bin
 lst
+mcu_fpga_test/usbhost/data_received.txt
+mcu_fpga_test/usbhost/usbhost

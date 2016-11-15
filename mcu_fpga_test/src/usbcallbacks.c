@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "em_device.h"
 #include "em_chip.h"
@@ -14,26 +13,19 @@
 #include "usbcallbacks.h"
 #include "leds.h"
 
-/* IMAGE BUFFER POINTERS */
-extern uint8_t* img_buf0;
-extern uint8_t* img_buf1;
-extern uint8_t* recv_buf;
-/* BUFFER STATUS VARIABLES */
-extern uint8_t* buf_ptr;
-extern uint8_t  buf_sel;
-extern bool 	buf_full;
-
-// volatile uint32_t counter = 0;
-// volatile bool ledsON = false;
-
+UBUF(recv_buf, BUFFERSIZE_RECV);
+/* BUFFER STATUS VARIABLE(S) */
+extern bool		buf_rdy;
+/* Wait for ready from USB host */
+extern bool _wait;
+extern bool _halt;
 
 void stateChange(USBD_State_TypeDef oldState, USBD_State_TypeDef newState) {
-	(void)oldState;
+	UNUSED(oldState);
 
-	
 	if (newState == USBD_STATE_CONFIGURED) {
-		// printf("%s\n", );
 		set_LED(LED0_ON | LED1_ON);
+		memset(recv_buf, 0, BUFFERSIZE_RECV);
 		USBD_Read(EP_OUT, recv_buf, BUFFERSIZE_RECV, dataReceivedCallback);
 	} else if (newState == USBD_STATE_ADDRESSED) {
 		set_LED(LED0_ON);
@@ -41,17 +33,33 @@ void stateChange(USBD_State_TypeDef oldState, USBD_State_TypeDef newState) {
 }
 
 int dataSentCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remaining) {
-	/* TODO: Find out what to do when transfer completes */
-	/* TODO: Set a flag denoting current inactive buffer is ready? */
+	
+	UNUSED(xferred);
+	UNUSED(remaining);
+
+	if (status == USB_STATUS_OK) {
+		/* Data successfully transferred. This means currently inactive buffer is ready for more data. */
+		buf_rdy = true;
+	}
+
+	set_LED(LED1_ON);
+
 	return USB_STATUS_OK;
 }
 
 int dataReceivedCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remaining) {
-	(void)xferred; (void)remaining;
+	UNUSED(xferred);
+	UNUSED(remaining);
 
 	if (status == USB_STATUS_OK) {
-		set_LED(LED0_ON | LED1_ON);
-		USBD_Read(EP_OUT, recv_buf, BUFFERSIZE_RECV, dataReceivedCallback);
+		if (_wait) {
+			_wait = false;
+			set_LED(LED0_ON | LED2_ON);
+			USBD_Read(EP_OUT, recv_buf, BUFFERSIZE_RECV, dataReceivedCallback);
+		} else if (!_halt) {
+			_halt = true;
+			set_LED(LED0_ON | LED3_ON);
+		}
 	}
 
 	return USB_STATUS_OK;

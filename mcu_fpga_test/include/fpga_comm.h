@@ -14,6 +14,7 @@ void setup_FPGA_comm();
 
 void start_FPGA_comm();
 void stop_FPGA_comm();
+void resume_FPGA_comm();
 
 
 #endif /* __FPGA_COMM_H_ */

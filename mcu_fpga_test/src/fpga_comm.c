@@ -7,10 +7,12 @@
 
 #include "defs.h"
 
+#include "leds.h"
+
 /* CONTROL */
-static const port_pin_t PIN_READY = (port_pin_t){.port = gpioPortC, .pin = 8};  		// EBI.C6
-static const port_pin_t PIN_VALID = (port_pin_t){.port = gpioPortC, .pin = 9};  		// EBI.C7
-static const port_pin_t PIN_ACK   = (port_pin_t){.port = gpioPortC, .pin = 10}; 		// EBI.C8
+static const port_pin_t PIN_READY = (port_pin_t){.port = gpioPortC, .pin = 6};  		// EBI.A5
+static const port_pin_t PIN_VALID = (port_pin_t){.port = gpioPortC, .pin = 7};  		// EBI.A6
+static const port_pin_t PIN_ACK   = (port_pin_t){.port = gpioPortC, .pin = 8}; 			// EBI.A15
 /* BYTE 0 */
 static const port_pin_t PIN_DATA0 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 0};		// EBI.A7
 static const port_pin_t PIN_DATA1 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 1};		// EBI.A8
@@ -76,32 +78,42 @@ void setup_FPGA_comm() {
 	GPIO_PinModeSet(PIN_DATA14.port, PIN_DATA14.pin, gpioModeInput, 0);
 	GPIO_PinModeSet(PIN_DATA15.port, PIN_DATA15.pin, gpioModeInput, 0);
 
-	/** 
-	 * Enable interrupts after all other setup is done,
-	 * as this could in theory generate an interrupt
-	 * before we are done configuring.
-	 */
-
-	/* Enable interrupts on odd GPIO pins */
-	NVIC_EnableIRQ(GPIO_ODD_IRQn);
 	/* Configure interrupts from VALID signal */
 	GPIO_IntConfig(PIN_VALID.port,	/* GPIO port */
 					PIN_VALID.pin,	/* GPIO pin */
 		 			true, 			/* risingEdge */
   		 			false, 			/* fallingEdge */
   		 			true);  		/* enable */
-	/* Clear any pending odd GPIO interrupts */
-	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
 }
 
 void start_FPGA_comm() {
+
+	/** 
+	 * Enable interrupts after all other setup is done,
+	 * as this could in theory generate an interrupt
+	 * before we are done configuring.
+	 */
+
+	set_LED(LED2_ON);
+	/* Clear any pending odd GPIO interrupts */
+	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+	/* Enable interrupts on odd GPIO pins */
+	NVIC_EnableIRQ(GPIO_ODD_IRQn);
 	/* Set READY high */
 	GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
 }
 
+void resume_FPGA_comm() {
+	/* Set READY high */
+	GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
+}	
+
 void stop_FPGA_comm() {
+	set_LED(LED3_ON);
 	/* Set READY low */
 	GPIO_PinOutClear(PIN_READY.port, PIN_READY.pin);
+	/* Disable interrupts */
+	NVIC_DisableIRQ(GPIO_ODD_IRQn);
 }
 
 static void read_bus_data(void) {
@@ -109,7 +121,6 @@ static void read_bus_data(void) {
 	GPIO_PinOutClear(PIN_READY.port, PIN_READY.pin);
 
 	uint16_t temp_data = 0;
-	
 
 	/* I think this cast is fine, maybe need to do some testing */
 	temp_data = (uint16_t) GPIO_PortInGet(DATA_BUS_PORT); 
@@ -141,6 +152,7 @@ static void read_bus_data(void) {
 }
 
 void GPIO_ODD_IRQHandler(void) {
+	set_LED(LED3_ON);
 	/* As long as we only have one interrupt enabled, this should be safe to use */
 	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
 	read_bus_data();
