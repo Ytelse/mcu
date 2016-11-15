@@ -30,6 +30,7 @@ extern bool 	buf_full;
 void stateChange(USBD_State_TypeDef oldState, USBD_State_TypeDef newState) {
 	(void)oldState;
 
+	
 	if (newState == USBD_STATE_CONFIGURED) {
 		// printf("%s\n", );
 		set_LED(LED0_ON | LED1_ON);

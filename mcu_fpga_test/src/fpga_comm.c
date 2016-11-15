@@ -109,6 +109,7 @@ static void read_bus_data(void) {
 	GPIO_PinOutClear(PIN_READY.port, PIN_READY.pin);
 
 	uint16_t temp_data = 0;
+	
 
 	/* I think this cast is fine, maybe need to do some testing */
 	temp_data = (uint16_t) GPIO_PortInGet(DATA_BUS_PORT); 

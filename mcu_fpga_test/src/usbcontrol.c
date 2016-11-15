@@ -13,6 +13,7 @@ extern uint8_t buf_sel;
 
 void setup_USB() {
 	USBD_Init(&initstruct);
+	
 }
 
 void notify_img_buf_ready() {
