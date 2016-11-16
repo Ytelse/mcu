@@ -9,31 +9,6 @@
 
 #include "leds.h"
 
-/* CONTROL */
-static const port_pin_t PIN_READY = (port_pin_t){.port = gpioPortC, .pin = 6};  		// EBI.A5
-static const port_pin_t PIN_VALID = (port_pin_t){.port = gpioPortC, .pin = 7};  		// EBI.A6
-static const port_pin_t PIN_ACK   = (port_pin_t){.port = gpioPortC, .pin = 8}; 			// EBI.A15
-/* BYTE 0 */
-static const port_pin_t PIN_DATA0 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 0};		// EBI.A7
-static const port_pin_t PIN_DATA1 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 1};		// EBI.A8
-static const port_pin_t PIN_DATA2 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 2};		// EBI.A9
-static const port_pin_t PIN_DATA3 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 3};		// EBI.A10
-/* BYTE 1 */
-static const port_pin_t PIN_DATA4 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 4};		// EBI.A11
-static const port_pin_t PIN_DATA5 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 5};		// EBI.A12
-static const port_pin_t PIN_DATA6 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 6};		// EBI.A13
-static const port_pin_t PIN_DATA7 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 7};		// EBI.A14
-/* BYTE 2 */
-static const port_pin_t PIN_DATA8 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 8};		// EBI.D0
-static const port_pin_t PIN_DATA9 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 9};		// EBI.D1
-static const port_pin_t PIN_DATA10 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 10};	// EBI.D2
-static const port_pin_t PIN_DATA11 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 11};	// EBI.D3
-/* BYTE 3 */
-static const port_pin_t PIN_DATA12 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 12};	// EBI.D4
-static const port_pin_t PIN_DATA13 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 13};	// EBI.D5
-static const port_pin_t PIN_DATA14 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 14};	// EBI.D6
-static const port_pin_t PIN_DATA15 = (port_pin_t){.port = DATA_BUS_PORT, .pin = 15};	// EBI.D7
-
 /* IMAGE BUFFER POINTERS */
 extern uint8_t* img_buf0;
 extern uint8_t* img_buf1;
@@ -52,38 +27,38 @@ void setup_FPGA_comm() {
 	/* Initialize GPIO pins */
 
 	/* READY signal -- out */
-	GPIO_PinModeSet(PIN_READY.port, PIN_READY.pin, gpioModePushPull, 0);
+	GPIO_PinModeSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_RDY, gpioModePushPull, 0);
 	/*   ACK signal -- out */
-	GPIO_PinModeSet(PIN_ACK.port, PIN_ACK.pin, gpioModePushPull, 0);
+	GPIO_PinModeSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_ACK, gpioModePushPull, 0);
 	/* VALID signal -- in  */
-	GPIO_PinModeSet(PIN_VALID.port, PIN_VALID.pin, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_VALID, gpioModeInput, 0);
 	/*  DATA signals -- in */
-	GPIO_PinModeSet(PIN_DATA0.port, PIN_DATA0.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA1.port, PIN_DATA1.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA2.port, PIN_DATA2.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA3.port, PIN_DATA3.pin, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN0, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN1, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN2, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN3, gpioModeInput, 0);
 
-	GPIO_PinModeSet(PIN_DATA4.port, PIN_DATA4.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA5.port, PIN_DATA5.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA6.port, PIN_DATA6.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA7.port, PIN_DATA7.pin, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN4, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN5, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN6, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN7, gpioModeInput, 0);
 
-	GPIO_PinModeSet(PIN_DATA8.port, PIN_DATA8.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA9.port, PIN_DATA9.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA10.port, PIN_DATA10.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA11.port, PIN_DATA11.pin, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN8, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN9, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN10, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN11, gpioModeInput, 0);
 
-	GPIO_PinModeSet(PIN_DATA12.port, PIN_DATA12.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA13.port, PIN_DATA13.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA14.port, PIN_DATA14.pin, gpioModeInput, 0);
-	GPIO_PinModeSet(PIN_DATA15.port, PIN_DATA15.pin, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN12, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN13, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN14, gpioModeInput, 0);
+	GPIO_PinModeSet(DBUS_DATA_PORT, DBUS_DATA_PIN15, gpioModeInput, 0);
 
 	/* Configure interrupts from VALID signal */
-	GPIO_IntConfig(PIN_VALID.port,	/* GPIO port */
-					PIN_VALID.pin,	/* GPIO pin */
-		 			true, 			/* risingEdge */
-  		 			false, 			/* fallingEdge */
-  		 			true);  		/* enable */
+	GPIO_IntConfig(DBUS_CTRL_PORT,			/* GPIO port */
+					DBUS_CTRL_PIN_VALID,	/* GPIO pin */
+		 			true, 					/* risingEdge */
+  		 			false, 					/* fallingEdge */
+  		 			true);  				/* enable */
 }
 
 void start_FPGA_comm() {
