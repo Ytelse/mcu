@@ -158,12 +158,41 @@ void GPIO_ODD_IRQHandler(void) {
 	read_bus_data();
 }
 
-void display_bus_on_led(void) {
-	uint32_t temp_data = GPIO_PortInGet(DATA_BUS_PORT) << 4;
-	set_LED(temp_data);
+/* Test function */
+
+uint32_t display_bus_on_led(void) {
+	uint32_t temp_data = GPIO_PortInGet(DATA_BUS_PORT);
+	// uint32_t led_mask = LEDS_ALL_OFF;
+
+	// if (((temp_data & 0x0000F000) >> 12) > 7) {
+	// 	led_mask |= LED0_ON;
+	// }
+
+	// if (((temp_data & 0x00000F00) >> 8) > 7) {
+	// 	led_mask |= LED1_ON;
+	// }
+
+	// if (((temp_data & 0x000000F0) >> 4) > 7) {
+	// 	led_mask |= LED2_ON;
+	// }
+
+	// if (((temp_data & 0x0000000F) >> 0) > 7) {
+	// 	led_mask |= LED3_ON;
+	// }
+
+	//set_LED(temp_data << 4);
+
+	// if (GPIO_PortInGet(DATA_BUS_PORT) & 0x00008000) {
+	// 	GPIO_PortOutSet(LED_PORT, LEDS_ALL_ON);
+	// } else {
+	// 	GPIO_PortOutClear(LED_PORT, LEDS_ALL_ON);
+	// }
 	GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
 	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+	return temp_data << 4;
 }	
+
+/* Test function */
 
 void set_ack_low(void) {
 	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);

@@ -5,6 +5,7 @@
 #include "em_chip.h"
 #include "em_cmu.h"
 #include "em_usb.h"
+#include "em_gpio.h"
 
 #include "defs.h"
 
@@ -55,6 +56,16 @@ void setup_ctrl(void) {
 	_halt = false;
 }
 
+/*
+ * TODO: Use __STATIC_INLINE keyword as much as possible when creating functions.
+ * The __STATIC_INLINE keyword instructs the compiler to attempt to replace
+ * the function call with the actual code of the function (if possible).
+ * This is a way to increase speed of code drastically, as we do not have to
+ * branch, create new stack, populate stack, branch back (with return values), populate
+ * old stack and so on. This save many, many cycles, and is essential if we want the
+ * data bus to be fast.
+ */
+
 int main(void) {
 	CHIP_Init();
 
@@ -78,12 +89,50 @@ int main(void) {
 	setup_FPGA_comm();
 
 	while (_wait) { 
+		uint32_t led_mask = display_bus_on_led();
 		/* Wait for ready signal from USB host */
 		/* In test mode, output data bus on LEDs */
-		display_bus_on_led();
-		//Delay(1);
 		//set_ack_low();
-		Delay(50);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		set_LED(led_mask);
+		Delay(1);
+		set_LED(LEDS_ALL_OFF);
+		Delay(24);
+		/* Clear ACK */
+		// GPIO_PinOutClear(gpioPortC, 8);
+		// if (GPIO_PortInGet(DATA_BUS_PORT) & 0x00008000) { /* Get bus value */
+		// 	GPIO_PortOutSet(LED_PORT, LEDS_ALL_ON); /* Set leds */
+		// } else {
+		// 	GPIO_PortOutClear(LED_PORT, LEDS_ALL_ON); /* Set leds */
+		// }
+		// GPIO_PinOutSet(gpioPortC, 8); /* Set ACK */
 	};
 
 	/* Start communcation with FPGA */
