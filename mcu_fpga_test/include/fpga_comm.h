@@ -1,6 +1,8 @@
 #ifndef __FPGA_COMM_H_
 #define __FPGA_COMM_H_
 
+/* TODO: Remove this file, no longer needed after new implementation of DBUS */
+
 #include "em_device.h"
 #include "em_gpio.h"
 #include "em_bus.h"

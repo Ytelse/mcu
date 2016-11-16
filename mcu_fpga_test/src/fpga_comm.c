@@ -9,6 +9,8 @@
 
 #include "leds.h"
 
+/* TODO: Remove this file. Not needed after the implementation of DBUS */
+
 /* IMAGE BUFFER POINTERS */
 extern uint8_t* img_buf0;
 extern uint8_t* img_buf1;

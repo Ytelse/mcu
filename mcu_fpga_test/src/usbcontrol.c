@@ -17,10 +17,14 @@ extern uint8_t* img_buf1;
 /* BUFFER STATUS VARIABLE(S) */
 extern uint8_t buf_sel;
 
+/* TODO: remove entire file, unneeded function calls take precious cycles */
+
 void setup_USB() {
 	USBD_Init(&initstruct);
 
 }
+
+/* TODO: Move this back into main */
 
 void notify_img_buf_ready(void) {
 	if (!buf_sel) { /* Write opposite of currently active buffer */
