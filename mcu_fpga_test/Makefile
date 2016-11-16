@@ -115,7 +115,9 @@ src/main.c \
 src/usbcallbacks.c \
 src/usbcontrol.c \
 src/leds.c \
-src/fpga_comm.c
+src/fpga_comm.c \
+src/dbus.c \
+src/dbus_test.c
 
 # Assembly sources
 
