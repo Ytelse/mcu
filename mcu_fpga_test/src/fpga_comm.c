@@ -157,3 +157,15 @@ void GPIO_ODD_IRQHandler(void) {
 	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
 	read_bus_data();
 }
+
+void display_bus_on_led(void) {
+	uint32_t temp_data = GPIO_PortInGet(DATA_BUS_PORT) << 4;
+	set_LED(temp_data);
+	GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
+	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+}	
+
+void set_ack_low(void) {
+	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+}
+

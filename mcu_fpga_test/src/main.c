@@ -24,18 +24,18 @@ volatile bool			buf_rdy;	/* Denotes whether inactive buffer is finished being wr
 
 volatile bool _wait, _halt;
 
-// volatile uint32_t msTicks;
+volatile uint32_t msTicks;
 
-// void SysTick_Handler(void) {
-// 	msTicks++;       /* increment counter necessary in Delay()*/
-// }
+void SysTick_Handler(void) {
+	msTicks++;       /* increment counter necessary in Delay()*/
+}
 
-// void Delay(uint32_t dlyTicks) {
-// 	uint32_t curTicks;
+void Delay(uint32_t dlyTicks) {
+	uint32_t curTicks;
 
-// 	curTicks = msTicks;
-// 	while ((msTicks - curTicks) < dlyTicks) ;
-// }
+	curTicks = msTicks;
+	while ((msTicks - curTicks) < dlyTicks) ;
+}
 
 void switch_buf(void) {
 	buf_sel = (buf_sel) ? 0 : 1; 	/* Select the buffer that is not in use */
@@ -60,7 +60,7 @@ int main(void) {
 
 	CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
 
-	//if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
+	if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
 
 	/* Set up control variables */
 
@@ -77,7 +77,14 @@ int main(void) {
 	/* Setup FPGA communication I/O pins */
 	setup_FPGA_comm();
 
-	while (_wait) { /* Wait for ready signal from USB host */ };
+	while (_wait) { 
+		/* Wait for ready signal from USB host */
+		/* In test mode, output data bus on LEDs */
+		display_bus_on_led();
+		//Delay(1);
+		//set_ack_low();
+		Delay(50);
+	};
 
 	/* Start communcation with FPGA */
 	start_FPGA_comm();
