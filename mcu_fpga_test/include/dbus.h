@@ -3,7 +3,6 @@
 
 #include "em_device.h"
 #include "em_bus.h"
-#include "em_gpio.h"
 
 /* CONTROL LINES */
 

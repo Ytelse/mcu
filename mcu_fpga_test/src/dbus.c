@@ -1,5 +1,8 @@
 #include "dbus.h"
 
+#include "em_cmu.h"
+#include "em_gpio.h"
+
 /* Initialize the DBUS */
 
 void DBUS_init(void) {
