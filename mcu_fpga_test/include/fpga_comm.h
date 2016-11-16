@@ -45,7 +45,7 @@ void start_FPGA_comm();
 void stop_FPGA_comm();
 void resume_FPGA_comm();
 /* Test function */
-uint32_t display_bus_on_led(void);
+uint32_t display_bus_on_led_fpga_comm(void);
 void set_ack_low(void);
 
 #endif /* __FPGA_COMM_H_ */

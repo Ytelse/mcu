@@ -77,33 +77,33 @@ void start_FPGA_comm() {
 	/* Enable interrupts on odd GPIO pins */
 	NVIC_EnableIRQ(GPIO_ODD_IRQn);
 	/* Set READY high */
-	GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
+	GPIO_PinOutSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_RDY);
 }
 
 void resume_FPGA_comm() {
 	/* Set READY high */
-	GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
+	GPIO_PinOutSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_RDY);
 }	
 
 void stop_FPGA_comm() {
 	set_LED(LED3_ON);
 	/* Set READY low */
-	GPIO_PinOutClear(PIN_READY.port, PIN_READY.pin);
+	GPIO_PinOutClear(DBUS_CTRL_PORT, DBUS_CTRL_PIN_RDY);
 	/* Disable interrupts */
 	NVIC_DisableIRQ(GPIO_ODD_IRQn);
 }
 
 static void read_bus_data(void) {
 	/* Set READY low */
-	GPIO_PinOutClear(PIN_READY.port, PIN_READY.pin);
+	GPIO_PinOutClear(DBUS_CTRL_PORT, DBUS_CTRL_PIN_RDY);
 
 	uint16_t temp_data = 0;
 
 	/* I think this cast is fine, maybe need to do some testing */
-	temp_data = (uint16_t) GPIO_PortInGet(DATA_BUS_PORT); 
+	temp_data = (uint16_t) GPIO_PortInGet(DBUS_DATA_PORT); 
 
 	/* All data read, set ACK high */
-	GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
+	GPIO_PinOutSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_ACK);
 
 	if (buf_sel) { 	/* Use image buffer 1 */
 		img_buf1[buf_idx++] = (uint8_t) (temp_data >> 8); 	/* Upper byte */
@@ -118,13 +118,13 @@ static void read_bus_data(void) {
 	}
 
 	/* Everything done, set ACK low and READY high */
-	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+	GPIO_PinOutClear(DBUS_CTRL_PORT, DBUS_CTRL_PIN_ACK);
 	/**
 	 * Only set READY high if there is more room in the buffer. If the 
 	 * buffer is full we have to switch buffer before setting READY high again.
 	 */ 
 	if (!buf_full) {
-		GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
+		GPIO_PinOutSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_RDY);
 	}
 }
 
@@ -137,8 +137,8 @@ void GPIO_ODD_IRQHandler(void) {
 
 /* Test function */
 
-uint32_t display_bus_on_led(void) {
-	uint32_t temp_data = GPIO_PortInGet(DATA_BUS_PORT);
+uint32_t display_bus_on_led_fpga_comm(void) {
+	uint32_t temp_data = GPIO_PortInGet(DBUS_DATA_PORT);
 	// uint32_t led_mask = LEDS_ALL_OFF;
 
 	// if (((temp_data & 0x0000F000) >> 12) > 7) {
@@ -164,14 +164,14 @@ uint32_t display_bus_on_led(void) {
 	// } else {
 	// 	GPIO_PortOutClear(LED_PORT, LEDS_ALL_ON);
 	// }
-	GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
-	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+	GPIO_PinOutSet(DBUS_CTRL_PORT, DBUS_CTRL_PIN_ACK);
+	GPIO_PinOutClear(DBUS_CTRL_PORT, DBUS_CTRL_PIN_ACK);
 	return temp_data << 4;
 }	
 
 /* Test function */
 
 void set_ack_low(void) {
-	GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
+	GPIO_PinOutClear(DBUS_CTRL_PORT, DBUS_CTRL_PIN_ACK);
 }
 
