@@ -99,6 +99,7 @@ CSRC := $(addprefix $(SDK_PATH), \
 /emlib/src/em_cmu.c \
 /emlib/src/em_int.c \
 /emlib/src/em_timer.c \
+/emlib/src/em_rtc.c \
 /usb/src/em_usbd.c \
 /usb/src/em_usbdch9.c \
 /usb/src/em_usbdep.c \
@@ -116,7 +117,8 @@ src/usbcallbacks.c \
 src/leds.c \
 src/fpga_comm.c \
 src/dbus.c \
-src/dbus_test.c
+src/dbus_test.c \
+src/rtc_timing.c
 
 # Assembly sources
 
