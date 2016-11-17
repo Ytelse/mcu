@@ -4,17 +4,9 @@
 #include "em_device.h"
 #include "em_bus.h"
 
-/* TODO: Remove following group of definitions, as they are not really needed */
-
-#define LEDS_ALL_ON		0x000000F0
-#define LEDS_ALL_OFF	0x00000000
-#define LED0_ON			0x00000080	/* LED9  on PCB */
-#define LED1_ON			0x00000010	/* LED10 on PCB */
-#define LED2_ON			0x00000020	/* LED11 on PCB */
-#define LED3_ON			0x00000040	/* LED12 on PCB */
-
 /* LED GPIO port */
 #define LED_PORT 3	/* GPIO Port E */
+
 /* LED GPIO pins */
 #define LED_PIN0 4	/* GPIO Pin 4 */
 #define LED_PIN1 5	/* GPIO Pin 5 */
@@ -78,10 +70,6 @@ __STATIC_INLINE void LEDS_clear(uint32_t mask) {
 
 /* Initializer */
 void LEDS_init(void);
-
-/* TODO: Remove these function declarations */
-int setup_LED(void);
-int set_LED(uint32_t mask);
 
 #endif
 
