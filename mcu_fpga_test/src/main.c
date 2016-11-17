@@ -10,8 +10,8 @@
 #include "defs.h"
 
 #include "leds.h"
+
 #include "dbus.h"
-#include "dbus_test.h"
 #include "usbcallbacks.h"
 #include "usbdescriptors.h"
 //#include "fpga_comm.h"
@@ -87,7 +87,17 @@ int main(void) {
 	while (_wait) { 
 		/* Wait for ready signal from USB host */
 		/* In test mode, output data bus on LEDs */
-		display_bus_on_led_no_protocol();
+
+		if  (DBUS_get_data() & 0x00008000) {
+			LEDS_set_all();
+		} else {
+			LEDS_clear_all();
+		}
+
+		DBUS_set_ACK();
+		DBUS_clear_ACK();
+
+
 	};
 
 	/* Start communcation with FPGA */
@@ -103,8 +113,6 @@ int main(void) {
 			} else {
 			  USBD_Write(EP_IN, img_buf0, BUFFERSIZE_SEND, dataSentCallback);
 			}
-
-			set_LED(LED0_ON);
 		} else {
 			//set_LED(buf_idx << 4);
 		}
