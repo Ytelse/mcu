@@ -44,12 +44,8 @@
 void DBUS_init(void);
 
 /**
- *
  * Inlined version of a DBUS read.
  * Gets the data currently registered on the DBUS (GPIO port E).
- *
- * TODO: Test this function.
- *
  */
 
 __STATIC_INLINE uint32_t DBUS_get_data(void) {
@@ -57,12 +53,8 @@ __STATIC_INLINE uint32_t DBUS_get_data(void) {
 }
 
 /**
- *
  * Inlined version of a ACK pin set.
  * Sets ACK high (logical true).
- *
- * TODO: Test this function.
- *
  */
 
 __STATIC_INLINE void DBUS_set_ACK(void) {
@@ -74,12 +66,8 @@ __STATIC_INLINE void DBUS_set_ACK(void) {
 }
 
 /**
- *
  * Inlined version of a ACK pin clear.
  * Sets ACK low (logical false).
- *
- * TODO: Test this function.
- *
  */
 
 __STATIC_INLINE void DBUS_clear_ACK(void) {
@@ -91,12 +79,8 @@ __STATIC_INLINE void DBUS_clear_ACK(void) {
 }
 
 /**
- *
  * Inlined version of a READY pin set.
  * Sets READY high (logical true).
- *
- * TODO: Test this function.
- *
  */
 
 __STATIC_INLINE void DBUS_set_READY(void) {
@@ -108,12 +92,8 @@ __STATIC_INLINE void DBUS_set_READY(void) {
 }
 
 /**
- *
  * Inlined version of a READY pin clear.
  * Sets READY low (logical false).
- *
- * TODO: Test this function.
- *
  */
 
 __STATIC_INLINE void DBUS_clear_READY(void) {
@@ -125,12 +105,8 @@ __STATIC_INLINE void DBUS_clear_READY(void) {
 }
 
 /**
- *
  * Inlined version of a VALID pin read.
  * Returns the value of VALID.
- *
- * TODO: Test this function.
- *
  */
 
 __STATIC_INLINE unsigned int DBUS_get_VALID(void) {
@@ -138,7 +114,6 @@ __STATIC_INLINE unsigned int DBUS_get_VALID(void) {
 }
 
 /** 
- *
  * Attempt at creating a inlined DBUS read that conforms to our 
  * communication protocol.
  *
@@ -148,12 +123,9 @@ __STATIC_INLINE unsigned int DBUS_get_VALID(void) {
  * NOTE: Caller must ensure that the data on the bus is valid before
  * issuing a read. This can be done either by polling DBUS_get_VALID()
  * or setting up a GPIO interrupt on DBUS_CTRL_PIN_VALID.
- * 
- * TODO: Test this function.
- * 
  */
 
-__STATIC_INLINE uint16_t DBUS_read(void) {
+__STATIC_INLINE __attribute__((optimize("O0"))) uint16_t DBUS_read(void) {
 	DBUS_clear_READY();
 	uint16_t data = (uint16_t) DBUS_get_data();
 	DBUS_set_ACK();
@@ -167,7 +139,6 @@ __STATIC_INLINE uint16_t DBUS_read(void) {
 /* ======================================================== */
 
 /** 
- *
  * Attempt at creating a inlined DBUS read that conforms to our 
  * communication protocol and stores the values in memory.
  *
@@ -186,9 +157,6 @@ __STATIC_INLINE uint16_t DBUS_read(void) {
  * EXAMPLE: read, increment idx and check address like this:
  * 				DBUS_read(&img_buf[idx]); idx+=2;
  *				if (idx == BUFFERSIZE) {-- switch buffers --}
- * 
- * TODO: Test this function.
- * 
  */
 
 __STATIC_INLINE void DBUS_read_and_store(uint8_t* ptr) {
