@@ -24,11 +24,11 @@ void stateChange(USBD_State_TypeDef oldState, USBD_State_TypeDef newState) {
 	UNUSED(oldState);
 
 	if (newState == USBD_STATE_CONFIGURED) {
-		set_LED(LED0_ON | LED1_ON);
+		LEDS_set(LED1);
 		memset(recv_buf, 0, BUFFERSIZE_RECV);
 		USBD_Read(EP_OUT, recv_buf, BUFFERSIZE_RECV, dataReceivedCallback);
 	} else if (newState == USBD_STATE_ADDRESSED) {
-		set_LED(LED0_ON);
+		LEDS_set(LED0);
 	}
 }
 
@@ -42,7 +42,7 @@ int dataSentCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remai
 		buf_rdy = true;
 	}
 
-	set_LED(LED1_ON);
+	LEDS_set(LED1);
 
 	return USB_STATUS_OK;
 }
@@ -54,11 +54,11 @@ int dataReceivedCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t r
 	if (status == USB_STATUS_OK) {
 		if (_wait) {
 			_wait = false;
-			set_LED(LED0_ON | LED2_ON);
+			LEDS_update_all(LED0 | LED2);
 			USBD_Read(EP_OUT, recv_buf, BUFFERSIZE_RECV, dataReceivedCallback);
 		} else if (!_halt) {
 			_halt = true;
-			set_LED(LED0_ON | LED3_ON);
+			LEDS_update_all(LED0 | LED3);
 		}
 	}
 
