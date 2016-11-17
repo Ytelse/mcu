@@ -9,10 +9,11 @@
 
 #include "defs.h"
 
-#include "usbcontrol.h"
 #include "leds.h"
 #include "dbus.h"
 #include "dbus_test.h"
+#include "usbcallbacks.h"
+#include "usbdescriptors.h"
 //#include "fpga_comm.h"
 
 /* UBUF is a macro for creating WORD-aligned uint8_t buffers */
@@ -76,9 +77,10 @@ int main(void) {
 
 	/* Initialize LED pins */
 	LEDS_init();
+
 	/* Setup USB stack */
-	/* TODO: Move initialization of USB stack from usbcontrol.c to here */
-	setup_USB();
+	USBD_Init(&initstruct);
+
 	/* Initialize DBUS for communication with FPGA */
 	DBUS_init();
 
@@ -96,7 +98,13 @@ int main(void) {
 		/* TODO: Fix the run loop */
 		if (buf_full && buf_rdy) {
 			switch_buf();
-			notify_img_buf_ready();
+			if (!buf_sel) { /* Write opposite of currently active buffer */
+			  USBD_Write(EP_IN, img_buf1, BUFFERSIZE_SEND, dataSentCallback);
+			} else {
+			  USBD_Write(EP_IN, img_buf0, BUFFERSIZE_SEND, dataSentCallback);
+			}
+
+			set_LED(LED0_ON);
 		} else {
 			//set_LED(buf_idx << 4);
 		}
