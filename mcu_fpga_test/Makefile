@@ -116,7 +116,8 @@ src/main.c \
 src/usbcallbacks.c \
 src/leds.c \
 src/dbus.c \
-src/rtc_timing.c
+src/rtc_timing.c \
+src/mstate.c
 #src/fpga_comm.c \
 
 # Assembly sources
