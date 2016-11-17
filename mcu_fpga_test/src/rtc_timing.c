@@ -10,15 +10,6 @@
 #define RTC_COUNT_BETWEEN_WAKEUP    (((LFRCO_FREQUENCY * WAKEUP_INTERVAL_MS) / 1000)-1)
 
 /**************************************************************************//**
- * @brief RTC Interrupt Handler, clears the flag.
- *****************************************************************************/
-void RTC_IRQHandler(void)
-{
-  /* Clear interrupt source */
-  RTC_IntClear(RTC_IFC_COMP0);
-}
-
-/**************************************************************************//**
  * @brief  Start LFRCO for RTC
  * Starts the low frequency RC oscillator (LFRCO) and routes it to the RTC
  *****************************************************************************/

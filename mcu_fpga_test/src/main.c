@@ -6,6 +6,8 @@
 #include "em_cmu.h"
 #include "em_usb.h"
 #include "em_gpio.h"
+#include "em_rtc.h"
+#include "em_emu.h"
 
 #include "defs.h"
 
@@ -14,7 +16,8 @@
 #include "dbus.h"
 #include "usbcallbacks.h"
 #include "usbdescriptors.h"
-//#include "fpga_comm.h"
+
+#include "rtc_timing.h"
 
 /* UBUF is a macro for creating WORD-aligned uint8_t buffers */
 UBUF(img_buf0, BUFFERSIZE_SEND);
@@ -29,17 +32,35 @@ volatile bool			buf_rdy;	/* Denotes whether inactive buffer is finished being wr
 volatile bool _wait, _halt;
 
 volatile uint32_t msTicks;
+volatile uint32_t bus_reads;
 
-void SysTick_Handler(void) {
-	msTicks++;       /* increment counter necessary in Delay()*/
+/* RTC Interrupt Handler */
+
+void RTC_IRQHandler(void) {
+	RTC_IntClear(RTC_IFC_COMP0);
+
+	uint32_t led_mask = 0;
+	led_mask |= (bus_reads > 0x000E0000) ? LED0 : LEDS_NONE;
+	led_mask |= (bus_reads > 0x000C0000) ? LED1 : LEDS_NONE;
+	led_mask |= (bus_reads > 0x000A0000) ? LED2 : LEDS_NONE;
+	led_mask |= (bus_reads > 0x00080000) ? LED3 : LEDS_NONE;
+
+	LEDS_update_all(led_mask);
+	bus_reads = 0;
 }
 
-void Delay(uint32_t dlyTicks) {
-	uint32_t curTicks;
+/* SystTick Handler */
 
-	curTicks = msTicks;
-	while ((msTicks - curTicks) < dlyTicks) ;
-}
+// void SysTick_Handler(void) {
+// 	msTicks++;       /* increment counter necessary in Delay()*/
+// }
+
+// void Delay(uint32_t dlyTicks) {
+// 	uint32_t curTicks;
+
+// 	curTicks = msTicks;
+// 	while ((msTicks - curTicks) < dlyTicks) ;
+// }
 
 void switch_buf(void) {
 	buf_sel = (buf_sel) ? 0 : 1; 	/* Select the buffer that is not in use */
@@ -58,6 +79,7 @@ void init_ctrl(void) {
 	buf_rdy = true;
 	_wait = true;
 	_halt = false;
+	bus_reads = 0;
 }
 
 int main(void) {
@@ -65,7 +87,7 @@ int main(void) {
 
 	CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
 
-	if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
+	//if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
 
 	/* Set up control variables */
 
@@ -84,20 +106,19 @@ int main(void) {
 	/* Initialize DBUS for communication with FPGA */
 	DBUS_init();
 
+	/* Enable Real-time clock interrupt every 1 second */
+	setupRtc();
+
 	while (_wait) { 
 		/* Wait for ready signal from USB host */
 		/* In test mode, output data bus on LEDs */
 
-		if  (DBUS_get_data() & 0x00008000) {
-			LEDS_set_all();
-		} else {
-			LEDS_clear_all();
+		if  (DBUS_get_data() + 1) {
+			bus_reads++;
 		}
 
 		DBUS_set_ACK();
 		DBUS_clear_ACK();
-
-
 	};
 
 	/* Start communcation with FPGA */

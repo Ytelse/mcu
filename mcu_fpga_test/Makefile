@@ -56,7 +56,7 @@ DEPFLAGS:=-MMD -MP -MF $(LSTDIR)/$(TARGET)_dependencies.d
 #C compiler flags
 CFLAGS:=-D$(DEVICE) -Wall -Wextra -mcpu=cortex-m3 -mthumb -mfix-cortex-m3-ldrd \
 -ffunction-sections -fdata-sections -fomit-frame-pointer -fwide-exec-charset=UTF-16LE \
--fshort-wchar $(DEPFLAGS)
+-fshort-wchar -O3 $(DEPFLAGS)
 
 #Assembler flags
 ASFLAGS:=-x assembler-with-cpp -D$(DEVICE) -Wall -Wextra -mcpu=cortex-m3 -mthumb \
@@ -115,10 +115,9 @@ CSRC += \
 src/main.c \
 src/usbcallbacks.c \
 src/leds.c \
-src/fpga_comm.c \
 src/dbus.c \
-src/dbus_test.c \
 src/rtc_timing.c
+#src/fpga_comm.c \
 
 # Assembly sources
 
@@ -147,17 +146,14 @@ vpath %.S $(S_PATHS)
 #                        BUILD RULES                         #
 ##############################################################
 
-.PHONY : all stk debug clean upload
-
-all : stk
-
-stk : CFLAGS += -DSTK
-stk : ASFLAGS += -DSTK
-stk : INCLUDEPATHS += $(addprefix -I$(SDK_PATH), /kits/common/drivers /kits/common/bsp /kits/EFM32GG_STK3700/config)
-stk : debug
+.PHONY : debug nodebug clean upload
 
 debug : CFLAGS += -DDEBUG -O0 -g
 debug : $(BINDIR)/$(TARGET).bin
+
+nodebug : CFLAGS += -DNDEBUG -O3
+nodebug : $(BINDIR)/$(TARGET).bin
+
 
 #TODO: Add nodebug/release target. Not necessary yet.
 
