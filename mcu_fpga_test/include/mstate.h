@@ -180,6 +180,11 @@ __attribute__((always_inline)) __STATIC_INLINE void __MSTATE_clear(uint32_t flag
 	__ASM volatile ("MSR apsr, %0" : : "r" (value) : "memory");
 }
 
+/**
+ * Testing so far shows negative results when attempting to write to
+ * APSR register.
+ */
+
 /* ========== END OF EXPERIMENTAL SECTION ============ */
 
 

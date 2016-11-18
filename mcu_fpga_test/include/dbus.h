@@ -187,11 +187,6 @@ void DBUS_start(void);
 /**
  * Inlined function for pausing communication with FPGA. Necessary
  * during buffer switches, etc.
- *
- * TODO: Depending on implementation on FPGA we may have to also
- * disable interrupts. In which case we (probably) can't inline
- * this function.
- *
  */
 
 __attribute__((always_inline)) __STATIC_INLINE void DBUS_pause(void) {

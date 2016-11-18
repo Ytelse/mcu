@@ -20,6 +20,14 @@
  *			-- _MSTATE_RESERVED19
  */
 
+/**
+ * TODO: Inlined ASM doesnt seem to work yet, and possibly never will. Add
+ * alternative implementation where we use a volatile variable (uint32_t state,
+ * declared in main.c), and send in the address to that variable in all the
+ * inlined functions. The inlining in such an implementation would be 
+ * cosmetic only, and only there for encapsulation.
+ */
+
 #define MSTATE_STATUS_REG_BASE 	0x1001FFF0UL	/* SRAM base adress + 0x000FFFF0 */
 
 typedef struct {
@@ -215,6 +223,8 @@ __STATIC_INLINE void MSTATE_set(uint32_t flags) {
 __STATIC_INLINE void MSTATE_clear(uint32_t flags) {
 	MSTATE->STATUS &= ~(flags);
 }
+
+/* TODO: Add function for swapping buffers etc., that is setting flags differently. */
 
 
 #endif /* __MSTATE_H_ */
