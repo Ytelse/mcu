@@ -18,7 +18,7 @@
 #include "usbcallbacks.h"
 #include "usbdescriptors.h"
 
-//#include "rtc_timing.h"
+#include "rtc_timing.h"
 
 /* UBUF is a macro for creating WORD-aligned uint8_t buffers */
 UBUF(img_buf0, BUFFERSIZE_SEND);
@@ -27,22 +27,23 @@ UBUF(img_buf1, BUFFERSIZE_SEND);
 volatile bool _wait, _halt;
 
 volatile uint32_t msTicks;
-// volatile uint32_t bus_reads;
+volatile uint32_t bus_reads;
 
 /* RTC Interrupt Handler */
 
-// void RTC_IRQHandler(void) {
-// 	RTC_IntClear(RTC_IFC_COMP0);
+void RTC_IRQHandler(void) {
+	RTC_IntClear(RTC_IFC_COMP0);
 
-// 	uint32_t led_mask = 0;
-// 	led_mask |= (bus_reads > 0x000E0000) ? LED0 : LEDS_NONE;
-// 	led_mask |= (bus_reads > 0x000C0000) ? LED1 : LEDS_NONE;
-// 	led_mask |= (bus_reads > 0x000A0000) ? LED2 : LEDS_NONE;
-// 	led_mask |= (bus_reads > 0x00080000) ? LED3 : LEDS_NONE;
 
-// 	LEDS_update_all(led_mask);
-// 	bus_reads = 0;
-// }
+	uint32_t led_mask = 0;
+	led_mask |= (bus_reads > 0x00186A00) ? LED0 : LEDS_NONE; // 1 600 000
+	led_mask |= (bus_reads > 0x001842F0) ? LED1 : LEDS_NONE; // 1 590 000
+	led_mask |= (bus_reads > 0x00181BE0) ? LED2 : LEDS_NONE; // 1 580 000
+	led_mask |= (bus_reads > 0x0017F4D0) ? LED3 : LEDS_NONE; // 1 570 000
+
+	LEDS_update_all(led_mask);
+	bus_reads = 0;
+}
 
 /* SystTick Handler */
 
@@ -65,10 +66,6 @@ volatile uint32_t msTicks;
 
 // 	DBUS_resume();
 // }
-
-int lstpoint(int something) {
-	return something + 10;
-}
 
 int main(void) {
 
@@ -99,14 +96,15 @@ int main(void) {
 
 	// MSTATE_init(&mstate_initstruct);
 
-	/* Enable Real-time clock interrupt every 1 second */
-	//setupRtc();
+	// Enable Real-time clock interrupt every 1 second */
+	bus_reads = 0;
+	setupRtc();
 
 	LEDS_clear_all();
 
 	//DBUS_start();
 
-	/* TEST PINS FOR TRIGGEREING LOGIC ANALYSER */
+	/* LOGIC ANALYZER TRIGGER */
 
 	GPIO_PinModeSet(gpioPortA, 0, gpioModePushPull, 1);
 	GPIO_PinModeSet(gpioPortA, 1, gpioModePushPull, 1);
@@ -116,20 +114,22 @@ int main(void) {
 	GPIO_PinOutSet(gpioPortA, 0);
 	GPIO_PinOutSet(gpioPortA, 1);
 
+	/* END LOGIC ANALYZER TRIGGER */
+
 	DBUS_set_READY();
 
 	while (1) {
 		if (DBUS_get_VALID()) {
 			DBUS_read();
+			bus_reads++;
 		} else {
-			LEDS_update_all(DBUS_get_data() << 4);
 			break;
 		}
-		/* DO NOTHING */
 	}
 
 	while (1) {
-
+		/* Trap */
+		LEDS_update_all(LED0);
 	}
 }
 
