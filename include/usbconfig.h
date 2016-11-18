@@ -1,5 +1,5 @@
-#ifndef _USBCONFIG_H_
-#define _USBCONFIG_H_
+#ifndef __USBCONFIG_H_
+#define __USBCONFIG_H_
 
 /* Compile USB stack for device mode */
 #define USB_DEVICE
@@ -16,11 +16,6 @@
 /* Define endpoint adresses */
 #define EP_IN  0x81 /* Device to host */
 #define EP_OUT 0x01 /* Host to device */
-
-#ifdef DEBUG
-/* If in debug mode, enable debug output from USB stack */
-#define DEBUG_USB_API
-#endif
 
 /* No power saving */
 #define USB_PWRSAVE_MODE USB_PWRSAVE_MODE_OFF

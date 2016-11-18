@@ -1,196 +1,144 @@
-#include <string.h>
+#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "em_device.h"
 #include "em_chip.h"
 #include "em_cmu.h"
-#include "em_emu.h"
 #include "em_usb.h"
-#include "em_ebi.h"
+#include "em_gpio.h"
+#include "em_rtc.h"
+#include "em_emu.h"
 
-#include "usb_control.h"
-#include "ebi_control.h"
-#include "led_control.h"
-#include "usb_callbacks.h"
-#include "gpio_control.h"
-#include "main.h"
-#include "utils.h"
+#include "defs.h"
 
-#define BUFFER_SIZE 64
-#define NUMBER_OF_IMAGES 1024
+#include "leds.h"
+#include "dbus.h"
+#include "mstate.h"
 
-state_t state;
-int* buffer;
+#include "usbcallbacks.h"
+#include "usbdescriptors.h"
 
-int VALID = 0;
+//#include "rtc_timing.h"
 
-int main(void)
-{
-  /* Chip errata */
-  CHIP_Init();
+/* UBUF is a macro for creating WORD-aligned uint8_t buffers */
+UBUF(img_buf0, BUFFERSIZE_SEND);
+UBUF(img_buf1, BUFFERSIZE_SEND);
 
-  /* Enable HFXO */
-  CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
+volatile bool _wait, _halt;
 
-  // This line is needed for Delay to work
-  if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
+volatile uint32_t msTicks;
+// volatile uint32_t bus_reads;
 
+/* RTC Interrupt Handler */
 
-  /* setupEBI(); */
-  /* setupLED(); */
-  setupUSB();
+// void RTC_IRQHandler(void) {
+// 	RTC_IntClear(RTC_IFC_COMP0);
 
-  setupGPIO();
+// 	uint32_t led_mask = 0;
+// 	led_mask |= (bus_reads > 0x000E0000) ? LED0 : LEDS_NONE;
+// 	led_mask |= (bus_reads > 0x000C0000) ? LED1 : LEDS_NONE;
+// 	led_mask |= (bus_reads > 0x000A0000) ? LED2 : LEDS_NONE;
+// 	led_mask |= (bus_reads > 0x00080000) ? LED3 : LEDS_NONE;
 
-#ifdef STK
-  GPIO_PinModeSet(4, 2, gpioModePushPull, 0);
-  GPIO_PinOutClear(4, 2);
-  GPIO_PinOutSet(4,2);
-  Delay(1000);
-  GPIO_PinOutClear(4, 2);
-#else /* PACMAN */
-  GPIO_PinModeSet(gpioPortD, 7, gpioModePushPull, 0);
-  GPIO_PinOutClear(gpioPortD, 7);
-  GPIO_PinOutSet(gpioPortD, 7);
-  Delay(1000);
-  GPIO_PinOutClear(gpioPortD, 7);
-#endif
+// 	LEDS_update_all(led_mask);
+// 	bus_reads = 0;
+// }
 
-  /* Buffer which is used to send and receive data */
-  buffer = (int*)malloc(NUMBER_OF_IMAGES * sizeof(int));
+/* SystTick Handler */
 
-  init_state();
+// void SysTick_Handler(void) {
+// 	msTicks++;       /* increment counter necessary in Delay()*/
 
-  while(state.mcu_state != FINALIZE){
-    switch(state.mcu_state) {
-      case IDLE:
-	while(state.mcu_state == IDLE) {
-	  mcu_chill();
+// }
+
+// void Delay(uint32_t dlyTicks) {
+// 	uint32_t curTicks;
+// 	curTicks = msTicks;
+// 	while ((msTicks - curTicks) < dlyTicks) ;
+// }
+
+// void switch_buf(void) {
+// 	buf_sel = (buf_sel) ? 0 : 1; 	/* Select the buffer that is not in use */
+// 	buf_idx = 0; 					/* Reset buf_idx */
+// 	buf_full = false;				/* New buffer is not full */
+// 	buf_rdy = false;				/* Inactive buffer is not ready */
+
+// 	DBUS_resume();
+// }
+
+int lstpoint(int something) {
+	return something + 10;
+}
+
+int main(void) {
+
+	CHIP_Init();
+
+	CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
+
+	// if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
+
+	/* Initialize image buffers to 0 */
+	// memset(img_buf0, 0, BUFFERSIZE_SEND);
+	// memset(img_buf1, 0, BUFFERSIZE_SEND);
+
+	/* Initialize LED pins */
+	LEDS_init();
+
+	/* Setup USB stack */
+	// USBD_Init(&initstruct);
+
+	/* Initialize DBUS for communication with FPGA */
+	DBUS_init();
+
+	/* Set up control variables */
+	// static MSTATE_init_struct_t mstate_initstruct = {
+	// 	.mcuState	=	MSTATE_MCU_WAIT,
+	// 	.bufSelect	=	MSTATE_BUF_SEL_0
+	// };
+
+	// MSTATE_init(&mstate_initstruct);
+
+	/* Enable Real-time clock interrupt every 1 second */
+	//setupRtc();
+
+	LEDS_clear_all();
+
+	//DBUS_start();
+
+	/* LOGIC ANALYZER TRIGGER */
+
+	GPIO_PinModeSet(gpioPortA, 0, gpioModePushPull, 1);
+	GPIO_PinModeSet(gpioPortA, 1, gpioModePushPull, 1);
+	GPIO_PinOutClear(gpioPortA, 0);
+	GPIO_PinOutClear(gpioPortA, 1);
+
+	GPIO_PinOutSet(gpioPortA, 0);
+	GPIO_PinOutSet(gpioPortA, 1);
+
+	/* END LOGIC ANALYZER TRIGGER */
+
+	DBUS_set_READY();
+
+	while (1) {
+		if (DBUS_get_VALID()) {
+			DBUS_read();
+		} else {
+			LEDS_update_all(DBUS_get_data() << 4);
+			break;
+		}
+		/* DO NOTHING */
 	}
-        break;
-      case RUN:
-        // Get from FPGA and send to PC
-        mcu_run_loop();
-        break;
-      case TESTRUN:
-        mcu_test_run();
-        // Create random values and send to PC
-        break;
-      case FINALIZE:
-        // Clean up
-        break;
-    }
-  }
 
-  free(buffer);
-  return 0;
+	while (1) {
+
+	}
 }
 
+// void GPIO_ODD_IRQHandler(void) {
+// 	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+// 	NVIC_DisableIRQ(GPIO_ODD_IRQn);
+// 	LEDS_update_all(DBUS_read() << 4);
+// 	NVIC_EnableIRQ(GPIO_ODD_IRQn);
+// }
 
-void init_state() {
-  state.mcu_state = RUN;
-  state.run_state = READY;
-}
-
-void mcu_chill() {
-  if ( USBD_SafeToEnterEM2() ) {
-    /* Enter EM2 when in suspend or disconnected */
-    EMU_EnterEM2(true);
-  }
-  else {
-    /* When USB is active we can sleep in EM1. */
-    EMU_EnterEM1();
-  }
-}
-
-void mcu_run_loop() {
-  /* Recieve data from FPGA and send it to PC when transfer is done */
-  for(int i = 0; i < NUMBER_OF_IMAGES; i += 4) {
-    // Set READY high
-#ifndef STK /* PACMAN */
-    GPIO_PinOutSet(PIN_READY.port, PIN_READY.pin);
-#endif 
-
-    // Check the valid signal
-    while(VALID == 0) {
-      mcu_chill();
-    }
-
-#ifndef STK /* PACMAN */
-    VALID = 0;
-#endif 
-
-    // One classification for every 4 bits
-    int classification = -1;
-    int bit0, bit1, bit2, bit3;
-
-    for (int j = 0; j < 4; j++) {
-      // Read bits ...
-      bit0 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[0 + j*4].port, PIN_DATA_ARRAY[0 + j*4].pin);
-      bit1 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[1 + j*4].port, PIN_DATA_ARRAY[1 + j*4].pin);
-      bit2 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[2 + j*4].port, PIN_DATA_ARRAY[2 + j*4].pin);
-      bit3 = (int)GPIO_PinOutGet(PIN_DATA_ARRAY[3 + j*4].port, PIN_DATA_ARRAY[3 + j*4].pin);
-
-      // Remove this part if deinterleaving is done on PC
-      // And concatinate
-      classification = bit0;
-      classification |= (bit1 << 1);
-      classification |= (bit2 << 2);
-      classification |= (bit3 << 3);
-
-      buffer[i+j] = classification;
-
-    }
-
-    // Set ACK high
-#ifndef STK /* PACMAN */
-    GPIO_PinOutSet(PIN_ACK.port, PIN_ACK.pin);
-    GPIO_PinOutSet(gpioPortD, 7);
-#else /* STK */
-    GPIO_PinOutSet(4,2);
-#endif
-
-    // Wait some cycles
-    Delay(50);
-
-    // Set ACK low
-#ifndef STK /* PACMAN */
-    GPIO_PinOutClear(PIN_ACK.port, PIN_ACK.pin);
-    GPIO_PinOutClear(gpioPortD, 7);
-#else /* PACMAN */
-    GPIO_PinOutClear(4,2);
-    Delay(50);
-#endif
-
-    // Repeat
-  }
-
-  // Transfer back to PC
-  USBD_Write(EP_IN, buffer, sizeof(buffer), dataSentCallback);
-
-#ifdef STK
-  Delay(1000);
-  GPIO_PinModeSet(4, 3, gpioModePushPull, 0);
-  GPIO_PinOutSet(4,3);
-#else /* PACMAN */
-  GPIO_PinModeSet(gpioPortD, 6, gpioModePushPull, 0);
-  GPIO_PinOutSet(gpioPortD, 6);
-#endif
-
-  // Finished
-  state.mcu_state = IDLE; // Finalize or IDLE?
-}
-
-void mcu_test_run() {
-  /* Fill buffer with random numbers */
-  for (int i = 0; i < BUFFER_SIZE; i++) {
-    buffer[i] = (int) rand();
-  }
-
-  /* Write to PC */
-  USBD_Write(EP_IN, buffer, sizeof(buffer), dataSentCallback);
-
-  // Finished
-  state.mcu_state = IDLE;
-}

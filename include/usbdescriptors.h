@@ -1,41 +1,5 @@
-/***************************************************************************//**
- * @file descriptors.h
- * @brief USB descriptors
- * @author Silicon Labs
- * @version 1.02
- *******************************************************************************
- * @section License
- * <b>(C) Copyright 2014 Silicon Labs, http://www.silabs.com</b>
- *******************************************************************************
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- * DISCLAIMER OF WARRANTY/LIMITATION OF REMEDIES: Silicon Labs has no
- * obligation to support this Software. Silicon Labs is providing the
- * Software "AS IS", with no express or implied warranties of any kind,
- * including, but not limited to, any implied warranties of merchantability
- * or fitness for any particular purpose or warranties against infringement
- * of any proprietary rights of a third party.
- *
- * Silicon Labs will not be liable for any consequential, incidental, or
- * special damages, or any other relief, or for any claim by any third party,
- * arising from your use of this Software.
- *
- ******************************************************************************/
-#ifdef __cplusplus
-extern "C" {
-#endif
-  
-#define USB_MAX_EP_SIZE 64
-#define USB_EP0_SIZE 64
+#ifndef __USB_DESCRIPTORS_H_
+#define __USB_DESCRIPTORS_H_
 
 /* Device Descriptor. Refer to the USB 2.0 Specification, chapter 9.6 */
 EFM32_ALIGN(4)
@@ -47,7 +11,7 @@ static const USB_DeviceDescriptor_TypeDef deviceDesc __attribute__ ((aligned(4))
   .bDeviceClass       = 0xFF,                           /* Vendor unique device */
   .bDeviceSubClass    = 0,                              /* Ignored for vendor unique device */            
   .bDeviceProtocol    = 0,                              /* Ignored for vendor unique device */
-  .bMaxPacketSize0    = USB_EP0_SIZE,                   /* Max packet size for EP0 */
+  .bMaxPacketSize0    = 64,                             /* Max packet size for EP0 */
   .idVendor           = 0x10C4,                         /* Energy Micro VID */
   .idProduct          = 0x0007,                         /* PID */
   .bcdDevice          = 0x0000,                         /* Device Release number */
@@ -99,17 +63,17 @@ static const uint8_t configDesc[] __attribute__ ((aligned(4)))=
   USB_ENDPOINT_DESCRIPTOR,              /* bDescriptorType      */
   EP_OUT,                               /* bEndpointAddress     */
   USB_EPTYPE_BULK,                      /* bmAttributes         */
-  USB_MAX_EP_SIZE,                      /* wMaxPacketSize (LSB) */
+  64,                                   /* wMaxPacketSize (LSB) */
   0,                                    /* wMaxPacketSize (MSB) */
   0,                                    /* bInterval            */    
   
   
-  /*** Bulk Endpoint Descriptor (IN) ***/
+  /*** Interrupt Endpoint Descriptor (IN) ***/
   USB_ENDPOINT_DESCSIZE,                /* bLength              */
   USB_ENDPOINT_DESCRIPTOR,              /* bDescriptorType      */
   EP_IN,                                /* bEndpointAddress     */
   USB_EPTYPE_BULK,                      /* bmAttributes         */
-  USB_MAX_EP_SIZE,                      /* wMaxPacketSize (LSB) */
+  64,                                   /* wMaxPacketSize (LSB) */
   0,                                    /* wMaxPacketSize (MSB) */
   0,                                    /* bInterval            */
    
@@ -120,13 +84,12 @@ static const uint8_t configDesc[] __attribute__ ((aligned(4)))=
  * Here 0x04 = United States, 0x09 = English. 
  * Refer to the USB Language Identifiers documentation. */
 STATIC_CONST_STRING_DESC_LANGID( langID, 0x04, 0x09 );
-STATIC_CONST_STRING_DESC( iManufacturer, 'Y','t','e','l','s','e');
-STATIC_CONST_STRING_DESC( iProduct     , 'P','A','C','M','A','N', ' ',
-                                         'U','S','B',' ', 
-                                         'D','e','v','i','c','e');
+STATIC_CONST_STRING_DESC( iManufacturer, 'Y', 't', 'e', 'l', 's', 'e' );
+STATIC_CONST_STRING_DESC( iProduct     , 'P', 'A', 'C', 'M', 'A', 'N', ' ',
+										                     'O', 'u', 't', 'p', 'u', 't', ' ',
+										                     'D', 'e', 'v', 'i', 'c', 'e');
 STATIC_CONST_STRING_DESC( iSerialNumber, '0','0','0','0','0','0',             
                                          '0','0','1','3','3','7' );
-
 
 static const void * const strings[] =
 {
@@ -150,7 +113,7 @@ static const USBD_Callbacks_TypeDef callbacks =
 {
   .usbReset        = NULL,              /* Called whenever USB reset signalling is detected on the USB port. */
   .usbStateChange  = stateChange,       /* Called whenever the device change state.  */
-  .setupCmd        = setupCmd,          /* Called on each setup request received from host. */
+  .setupCmd        = NULL,              /* Called on each setup request received from host. */
   .isSelfPowered   = NULL,              /* Called whenever the device stack needs to query if the device is currently self- or bus-powered. */
   .sofInt          = NULL               /* Called at each SOF (Start of Frame) interrupt. If NULL, the device stack will not enable the SOF interrupt. */
 };
@@ -168,7 +131,4 @@ static const USBD_Init_TypeDef initstruct =
   .reserved            = 0
 };
 
-#ifdef __cplusplus
-}
-#endif
-
+#endif /* __USB_DESCRIPTORS_H_ */

@@ -56,7 +56,7 @@ DEPFLAGS:=-MMD -MP -MF $(LSTDIR)/$(TARGET)_dependencies.d
 #C compiler flags
 CFLAGS:=-D$(DEVICE) -Wall -Wextra -mcpu=cortex-m3 -mthumb -mfix-cortex-m3-ldrd \
 -ffunction-sections -fdata-sections -fomit-frame-pointer -fwide-exec-charset=UTF-16LE \
--fshort-wchar $(DEPFLAGS)
+-fshort-wchar -O3 $(DEPFLAGS)
 
 #Assembler flags
 ASFLAGS:=-x assembler-with-cpp -D$(DEVICE) -Wall -Wextra -mcpu=cortex-m3 -mthumb \
@@ -93,16 +93,13 @@ INCLUDEPATHS += -Isrc -Iinclude
 
 CSRC := $(addprefix $(SDK_PATH), \
 /Device/SiliconLabs/EFM32GG/Source/system_efm32gg.c \
-/eblib/src/em_ebi.c \
-/emlib/src/em_assert.c \
 /emlib/src/em_system.c \
 /emlib/src/em_gpio.c \
-/emlib/src/em_cmu.c \
 /emlib/src/em_emu.c \
-/emlib/src/em_timer.c \
+/emlib/src/em_cmu.c \
 /emlib/src/em_int.c \
-/emlib/src/em_lcd.c \
-/emlib/src/em_usart.c \
+/emlib/src/em_timer.c \
+/emlib/src/em_rtc.c \
 /usb/src/em_usbd.c \
 /usb/src/em_usbdch9.c \
 /usb/src/em_usbdep.c \
@@ -116,10 +113,12 @@ CSRC := $(addprefix $(SDK_PATH), \
 
 CSRC += \
 src/main.c \
-src/usb_callbacks.c \
-src/usb_control.c \
-src/led_control.c \
-src/ebi_control.c
+src/usbcallbacks.c \
+src/leds.c \
+src/dbus.c \
+src/rtc_timing.c \
+src/mstate.c
+#src/fpga_comm.c \
 
 # Assembly sources
 
@@ -148,19 +147,13 @@ vpath %.S $(S_PATHS)
 #                        BUILD RULES                         #
 ##############################################################
 
-.PHONY : all stk debug clean upload
+.PHONY : debug nodebug clean upload
 
-all : stk
-
-stk : CFLAGS += -DSTK
-stk : ASFLAGS += -DSTK
-stk : INCLUDEPATHS += $(addprefix -I$(SDK_PATH), /kits/common/drivers /kits/common/bsp /kits/EFM32GG_STK3700/config)
-stk : debug
+nodebug : CFLAGS += -DNDEBUG -O3
+nodebug : $(BINDIR)/$(TARGET).bin
 
 debug : CFLAGS += -DDEBUG -O0 -g
 debug : $(BINDIR)/$(TARGET).bin
-
-#TODO: Add nodebug/release target. Not necessary yet.
 
 # Compile C sources into objects
 $(OBJDIR)/%.o : %.c | $(OBJDIR) $(LSTDIR)
