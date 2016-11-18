@@ -46,16 +46,16 @@ volatile uint32_t msTicks;
 
 /* SystTick Handler */
 
-void SysTick_Handler(void) {
-	msTicks++;       /* increment counter necessary in Delay()*/
+// void SysTick_Handler(void) {
+// 	msTicks++;       /* increment counter necessary in Delay()*/
 
-}
+// }
 
-void Delay(uint32_t dlyTicks) {
-	uint32_t curTicks;
-	curTicks = msTicks;
-	while ((msTicks - curTicks) < dlyTicks) ;
-}
+// void Delay(uint32_t dlyTicks) {
+// 	uint32_t curTicks;
+// 	curTicks = msTicks;
+// 	while ((msTicks - curTicks) < dlyTicks) ;
+// }
 
 // void switch_buf(void) {
 // 	buf_sel = (buf_sel) ? 0 : 1; 	/* Select the buffer that is not in use */
@@ -66,84 +66,77 @@ void Delay(uint32_t dlyTicks) {
 // 	DBUS_resume();
 // }
 
+int lstpoint(int something) {
+	return something + 10;
+}
+
 int main(void) {
+
 	CHIP_Init();
 
 	CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
 
-	if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
+	// if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
 
 	/* Initialize image buffers to 0 */
-	memset(img_buf0, 0, BUFFERSIZE_SEND);
-	memset(img_buf1, 0, BUFFERSIZE_SEND);
+	// memset(img_buf0, 0, BUFFERSIZE_SEND);
+	// memset(img_buf1, 0, BUFFERSIZE_SEND);
 
 	/* Initialize LED pins */
 	LEDS_init();
 
 	/* Setup USB stack */
-	USBD_Init(&initstruct);
+	// USBD_Init(&initstruct);
 
 	/* Initialize DBUS for communication with FPGA */
 	DBUS_init();
 
 	/* Set up control variables */
-	static MSTATE_init_struct_t mstate_initstruct = {
-		.mcuState	=	MSTATE_MCU_WAIT,
-		.bufSelect	=	MSTATE_BUF_SEL_0
-	};
+	// static MSTATE_init_struct_t mstate_initstruct = {
+	// 	.mcuState	=	MSTATE_MCU_WAIT,
+	// 	.bufSelect	=	MSTATE_BUF_SEL_0
+	// };
 
-	MSTATE_init(&mstate_initstruct);
+	// MSTATE_init(&mstate_initstruct);
 
 	/* Enable Real-time clock interrupt every 1 second */
 	//setupRtc();
 
 	LEDS_clear_all();
 
-	while (msTicks < 10000) {
-		/* Set LEDs to APSR[31:28] */ 
-		LEDS_update_all(__MSTATE_get_all() >> 28);
-		Delay(200);
+	//DBUS_start();
+
+	/* TEST PINS FOR TRIGGEREING LOGIC ANALYSER */
+
+	GPIO_PinModeSet(gpioPortA, 0, gpioModePushPull, 1);
+	GPIO_PinModeSet(gpioPortA, 1, gpioModePushPull, 1);
+	GPIO_PinOutClear(gpioPortA, 0);
+	GPIO_PinOutClear(gpioPortA, 1);
+
+	GPIO_PinOutSet(gpioPortA, 0);
+	GPIO_PinOutSet(gpioPortA, 1);
+
+	DBUS_set_READY();
+
+	while (1) {
+		if (DBUS_get_VALID()) {
+			DBUS_read();
+		} else {
+			LEDS_update_all(DBUS_get_data() << 4);
+			break;
+		}
+		/* DO NOTHING */
 	}
 
-	while (msTicks < 20000) {
-		/* Set LEDs to APSR[27:24] */
-		LEDS_update_all(__MSTATE_get_all() >> 24);
-		Delay(200);
-	}
+	while (1) {
 
-	while (msTicks < 30000) {
-		/* Set LEDs to APSR[23:20] */
-		LEDS_update_all(__MSTATE_get_all() >> 20);
-		Delay(200);
-	}
-
-	while (msTicks < 40000) {
-		/* Set LEDs to APSR[19:16] */
-		LEDS_update_all(__MSTATE_get_all() >> 16);
-		Delay(200);
-	}
-
-	while (msTicks < 50000) {
-		/* Set LEDs to APSR[15:12] */
-		LEDS_update_all(__MSTATE_get_all() >> 12);
-		Delay(200);
-	}
-
-	while (msTicks < 60000) {
-		/* Set LEDs to APSR[11:8] */
-		LEDS_update_all(__MSTATE_get_all() >> 8);
-		Delay(200);
-	}
-
-	while (msTicks < 70000) {
-		/* Set LEDs to APSR[7:4] */
-		LEDS_update_all(__MSTATE_get_all() >> 4);
-		Delay(200);
-	}
-
-	while (msTicks < 80000) {
-		/* Set LEDs to APSR[3:0] */
-		LEDS_update_all(__MSTATE_get_all() >> 0);
-		Delay(200);
 	}
 }
+
+// void GPIO_ODD_IRQHandler(void) {
+// 	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+// 	NVIC_DisableIRQ(GPIO_ODD_IRQn);
+// 	LEDS_update_all(DBUS_read() << 4);
+// 	NVIC_EnableIRQ(GPIO_ODD_IRQn);
+// }
+
