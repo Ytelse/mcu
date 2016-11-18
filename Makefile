@@ -10,7 +10,7 @@
 # Name of device we are developing for
 DEVICE:=EFM32GG990F1024
 # This will be the name of the binary after all compilation is done
-TARGET:=efm32gg_stk_usb_device
+TARGET:=PACMAN_MCU
 
 # Directories
 OBJDIR:= build
@@ -20,7 +20,7 @@ LSTDIR:= lst
 # ANSI color codes
 # Only used for fancy output
 NO_COLOR=\x1b[0m
-YELLOW_COLOR=\x1b[33;01m
+BLUE_COLOR=\x1b[34;01m
 
 # Overwrite this to point to the EFM32 SDK on the machine it will build on
 SDK_PATH:= /Users/frodeja/Documents/Skole/TDT4295/efm32_sdk/v4.4.1
@@ -56,7 +56,7 @@ DEPFLAGS:=-MMD -MP -MF $(LSTDIR)/$(TARGET)_dependencies.d
 #C compiler flags
 CFLAGS:=-D$(DEVICE) -Wall -Wextra -mcpu=cortex-m3 -mthumb -mfix-cortex-m3-ldrd \
 -ffunction-sections -fdata-sections -fomit-frame-pointer -fwide-exec-charset=UTF-16LE \
--fshort-wchar -O3 $(DEPFLAGS)
+-fshort-wchar -O3 -DNDEBUG $(DEPFLAGS)
 
 #Assembler flags
 ASFLAGS:=-x assembler-with-cpp -D$(DEVICE) -Wall -Wextra -mcpu=cortex-m3 -mthumb \
@@ -86,10 +86,7 @@ INCLUDEPATHS += -Isrc -Iinclude
 #                            FILES                           #
 ##############################################################
 
-# emlib / SiliconLabs / etc. C sources
-# Add files to this list as they are needed
-# If you get some error saying "unknown symbol", it is most
-# likely caused by a source not being in this list
+# emlib sources
 
 CSRC := $(addprefix $(SDK_PATH), \
 /Device/SiliconLabs/EFM32GG/Source/system_efm32gg.c \
@@ -109,16 +106,13 @@ CSRC := $(addprefix $(SDK_PATH), \
 )
 
 # Local C sources
-# Add all sources used locally
 
 CSRC += \
 src/main.c \
 src/usbcallbacks.c \
 src/leds.c \
 src/dbus.c \
-src/rtc_timing.c \
 src/mstate.c
-#src/fpga_comm.c \
 
 # Assembly sources
 
@@ -147,39 +141,35 @@ vpath %.S $(S_PATHS)
 #                        BUILD RULES                         #
 ##############################################################
 
-.PHONY : debug nodebug clean upload
+.PHONY : all clean upload
 
-nodebug : CFLAGS += -DNDEBUG -O3
-nodebug : $(BINDIR)/$(TARGET).bin
-
-debug : CFLAGS += -DDEBUG -O0 -g
-debug : $(BINDIR)/$(TARGET).bin
+all : $(BINDIR)/$(TARGET).bin
 
 # Compile C sources into objects
 $(OBJDIR)/%.o : %.c | $(OBJDIR) $(LSTDIR)
-	@echo "$(YELLOW_COLOR)Building file: $<$(NO_COLOR)"
+	@echo "$(BLUE_COLOR)Building file: $<$(NO_COLOR)"
 	$(CC) $(CFLAGS) $(INCLUDEPATHS) -c -o $@ $<
 
 # Assemble assembly sources
 $(OBJDIR)/%.o : %.s | $(OBJDIR) $(LSTDIR)
-	@echo "$(YELLOW_COLOR)Assembling $<$(NO_COLOR)"
+	@echo "$(BLUE_COLOR)Assembling $<$(NO_COLOR)"
 	$(CC) $(ASFLAGS) $(INCLUDEPATHS) -c -o $@ $<
 
 $(OBJDIR)/%.o : %.S | $(OBJDIR) $(LSTDIR)
-	@echo "$(YELLOW_COLOR)Assembling $<$(NO_COLOR)"
+	@echo "$(BLUE_COLOR)Assembling $<$(NO_COLOR)"
 	$(CC) $(ASFLAGS) $(INCLUDEPATHS) -c -o $@ $<
 
 # Link objects
 $(BINDIR)/$(TARGET).out : $(OBJS) | $(BINDIR)
-	@echo "$(YELLOW_COLOR)Linking target: $@$(NO_COLOR)"
+	@echo "$(BLUE_COLOR)Linking target: $@$(NO_COLOR)"
 	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $(BINDIR)/$(TARGET).out
 
 # Create binary
 $(BINDIR)/$(TARGET).bin : $(BINDIR)/$(TARGET).out
-	@echo "$(YELLOW_COLOR)Creating binary file$(NO_COLOR)"
+	@echo "$(BLUE_COLOR)Creating binary file$(NO_COLOR)"
 	$(OBJCOPY) -O binary $(BINDIR)/$(TARGET).out $(BINDIR)/$(TARGET).bin
-	@echo "$(YELLOW_COLOR)Creating assembly listing of entire program$(NO_COLOR)"
-	$(OBJDUMP) -h -S -C $(BINDIR)/$(TARGET).out>$(LSTDIR)/$(TARGET)out.lst
+	@echo "$(BLUE_COLOR)Creating assembly listing of entire program$(NO_COLOR)"
+	$(OBJDUMP) -h -S -C $(BINDIR)/$(TARGET).out>$(LSTDIR)/$(TARGET)_out.lst
 
 $(OBJDIR) :
 	mkdir $@
