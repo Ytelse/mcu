@@ -53,7 +53,7 @@ void DBUS_init(void);
  * Gets the data currently registered on the DBUS (GPIO port E).
  */
 
-__STATIC_INLINE uint32_t DBUS_get_data(void) {
+__attribute__((always_inline)) __STATIC_INLINE uint32_t DBUS_get_data(void) {
 	return GPIO->P[DBUS_DATA_PORT].DIN;
 }
 
@@ -62,7 +62,7 @@ __STATIC_INLINE uint32_t DBUS_get_data(void) {
  * Sets ACK high (logical true).
  */
 
-__STATIC_INLINE void DBUS_set_ACK(void) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_set_ACK(void) {
 	#ifdef _GPIO_P_DOUTSET_MASK
 	GPIO->P[DBUS_ACK_PORT].DOUTSET = 1 << DBUS_ACK_PIN;
 	#else
@@ -75,7 +75,7 @@ __STATIC_INLINE void DBUS_set_ACK(void) {
  * Sets ACK low (logical false).
  */
 
-__STATIC_INLINE void DBUS_clear_ACK(void) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_clear_ACK(void) {
 	#ifdef _GPIO_P_DOUTCLR_MASK
 	GPIO->P[DBUS_ACK_PORT].DOUTCLR = 1 << DBUS_ACK_PIN;
 	#else
@@ -88,7 +88,7 @@ __STATIC_INLINE void DBUS_clear_ACK(void) {
  * Sets READY high (logical true).
  */
 
-__STATIC_INLINE void DBUS_set_READY(void) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_set_READY(void) {
 	#ifdef _GPIO_P_DOUTSET_MASK
 	GPIO->P[DBUS_RDY_PORT].DOUTSET = 1 << DBUS_RDY_PIN;
 	#else
@@ -101,7 +101,7 @@ __STATIC_INLINE void DBUS_set_READY(void) {
  * Sets READY low (logical false).
  */
 
-__STATIC_INLINE void DBUS_clear_READY(void) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_clear_READY(void) {
 	#ifdef _GPIO_P_DOUTCLR_MASK
 	GPIO->P[DBUS_RDY_PORT].DOUTCLR = 1 << DBUS_RDY_PIN;
 	#else
@@ -114,7 +114,7 @@ __STATIC_INLINE void DBUS_clear_READY(void) {
  * Returns the value of VALID.
  */
 
-__STATIC_INLINE unsigned int DBUS_get_VALID(void) {
+__attribute__((always_inline)) __STATIC_INLINE unsigned int DBUS_get_VALID(void) {
 	return BUS_RegBitRead(&GPIO->P[DBUS_VLD_PORT].DIN, DBUS_VLD_PIN);
 }
 
@@ -130,7 +130,7 @@ __STATIC_INLINE unsigned int DBUS_get_VALID(void) {
  * or setting up a GPIO interrupt on DBUS_CTRL_PIN_VALID.
  */
 
-__STATIC_INLINE __attribute__((optimize("O0"))) uint16_t DBUS_read(void) {
+__attribute__((always_inline)) __STATIC_INLINE __attribute__((optimize("O0"))) uint16_t DBUS_read(void) {
 	DBUS_clear_READY();
 	uint16_t data = (uint16_t) DBUS_get_data();
 	DBUS_set_ACK();
@@ -164,7 +164,7 @@ __STATIC_INLINE __attribute__((optimize("O0"))) uint16_t DBUS_read(void) {
  *				if (idx == BUFFERSIZE) {-- switch buffers --}
  */
 
-__STATIC_INLINE void DBUS_read_and_store(uint8_t* ptr) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_read_and_store(uint8_t* ptr) {
 	/* Set READY low */
 	DBUS_clear_READY();
 	/* Get DATA */
@@ -194,7 +194,7 @@ void DBUS_start(void);
  *
  */
 
-__STATIC_INLINE void DBUS_pause(void) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_pause(void) {
 	DBUS_clear_READY();
 }
 
@@ -202,7 +202,7 @@ __STATIC_INLINE void DBUS_pause(void) {
  * Inlined function for resuming communication with FPGA.
  */
 
-__STATIC_INLINE void DBUS_resume(void) {
+__attribute__((always_inline)) __STATIC_INLINE void DBUS_resume(void) {
 	DBUS_set_READY();
 }
 
