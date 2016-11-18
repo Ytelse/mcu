@@ -149,14 +149,11 @@ vpath %.S $(S_PATHS)
 
 .PHONY : debug nodebug clean upload
 
-debug : CFLAGS += -DDEBUG -O0 -g
-debug : $(BINDIR)/$(TARGET).bin
-
 nodebug : CFLAGS += -DNDEBUG -O3
 nodebug : $(BINDIR)/$(TARGET).bin
 
-
-#TODO: Add nodebug/release target. Not necessary yet.
+debug : CFLAGS += -DDEBUG -O0 -g
+debug : $(BINDIR)/$(TARGET).bin
 
 # Compile C sources into objects
 $(OBJDIR)/%.o : %.c | $(OBJDIR) $(LSTDIR)
