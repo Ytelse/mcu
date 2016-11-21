@@ -1,25 +1,13 @@
 ==== MCU TODO LIST ====
 
-* Test interrupt-driven MCU <-> FPGA communication
-	- See GPIO_ODD_IRQHandler in src/main.c for details
-
-* Fix MSTATE implementation.
-	- Accessing CPU register is so far unsuccessful.
-		- Unsure if it is worth trying further for minuscule performance gain
-	- See mstate.h in both include/ and mcu_fpga_test/include for details
-
-* Implement the USB callback functions properly
-	- Data read callback:
-		- Set MSTATE flags according to data received from USB host
-	- Data sent callback:
-		- Set MSTATE flags denoting buffer availability
-	- State changed callback:
-		- Set MSTATE flags?
-		- Set LEDs?
+* Test data correctness of data transferred from FPGA to MCU
+	- Perhaps transfer numbers from 0 to (2^16)-1 and read through
+	  output checking for any missing numbers. If we do this over several
+	  MB of data we should find discrepancies if they exist.
 
 * Add documentation for entire codebase!
 	- Not necessary to explain how everything works (only if it does something very hacky)
-	  but ensure that every functions has a line or two about _what_ it does.
+	  but ensure that every function has a line or two about _what_ it does.
 
 * TODO: Add more TODO items to this list.
 
