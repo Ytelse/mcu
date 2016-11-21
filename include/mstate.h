@@ -1,9 +1,6 @@
 #ifndef __MSTATE_H_
 #define __MSTATE_H_
 
-#include "em_device.h"
-#include "em_bus.h"
-
 /* STATE flags */
 
 #define MSTATE_MCU_RUN			0x00000001	/* MCU in RUNNING state */
@@ -46,47 +43,5 @@
 #define _MSTATE_RESERVED17		0x20000000  /* Reserved for future use */
 #define _MSTATE_RESERVED18		0x40000000  /* Reserved for future use */
 #define _MSTATE_RESERVED19		0x80000000  /* Reserved for future use */
-
-// typedef struct {
-// 	uint32_t mcuState;
-// 	uint8_t bufSelect;
-// 	/* Add others as necessary */
-// } MSTATE_init_struct_t;
-
-// void MSTATE_init(uint32_t* MSTATE, MSTATE_init_struct_t* initstruct);
-
-// __STATIC_INLINE unsigned int MSTATE_get(uint32_t* MSTATE, uint32_t flag) {
-// 	return *MSTATE & flag;
-// }
-
-// __STATIC_INLINE void MSTATE_set(uint32_t* MSTATE, uint32_t flags) {
-// 	*MSTATE |= flags;
-// }
-
-// __STATIC_INLINE void MSTATE_clear(uint32_t* MSTATE, uint32_t flags) {
-// 	*MSTATE &= ~flags;
-// }
-
-//  TODO: Add function for swapping buffers etc., that is setting flags differently. 
-
-// /* APPLICATION SPECIFIC FUNCTIONS */
-
-// /* Check to see if the currently active buffer is ready */
-
-// __STATIC_INLINE unsigned int MSTATE_cur_buf_rdy(uint32_t* MSTATE) {
-// 	if (*MSTATE & MSTATE_BUF_SEL) {
-// 		return MSTATE_get(MSTATE, MSTATE_BUF_1_RDY);
-// 	} else {
-// 		return MSTATE_get(MSTATE, MSTATE_BUF_0_RDY);
-// 	}
-// }
-
-// __STATIC_INLINE void MSTATE_set_cur_buf_full(uint32_t* MSTATE) {
-// 	if (*MSTATE & MSTATE_BUF_SEL) {
-// 		MSTATE_set(MSTATE, MSTATE_BUF_1_FULL);
-// 	} else {
-// 		MSTATE_set(MSTATE, MSTATE_BUF_0_FULL);
-// 	}
-// }
 
 #endif /* __MSTATE_H_ */
