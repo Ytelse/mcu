@@ -40,6 +40,7 @@ void DBUS_init(void) {
 		 			true, 					/* risingEdge */
   		 			false, 					/* fallingEdge */
   		 			true);  				/* enable */
+	
 }
 
 /* ======================================================== */

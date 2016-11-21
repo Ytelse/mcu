@@ -33,7 +33,7 @@
 #define DBUS_DATA_PIN7		7 		/* MSB */ /* Pin 7 */
 
 /* HALF-BYTE 2 */
-#define DBUS_DATA_PIN8		8 		/* LSB */ /* Pin 8 */
+#define DBUS_DATA_PIN8		8		/* LSB */ /* Pin 8 */
 #define DBUS_DATA_PIN9		9
 #define DBUS_DATA_PIN10		10
 #define DBUS_DATA_PIN11		11 		/* MSB */ /* Pin 1 */

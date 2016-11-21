@@ -112,7 +112,8 @@ src/main.c \
 src/usbcallbacks.c \
 src/leds.c \
 src/dbus.c \
-src/mstate.c
+
+#src/mstate.c
 
 # Assembly sources
 

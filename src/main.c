@@ -20,9 +20,7 @@ UBUF(img_buf1, BUFFERSIZE_SEND);
 
 /* MCU state */
 
-volatile uin32_t state;
-/* Address of next available memory location in active image buffer */
-volatile uint8_t* ptr;
+volatile uint32_t MSTATE;
 
 int main(void) {
 
@@ -36,6 +34,7 @@ int main(void) {
 
 	/* Initialize LED pins */
 	LEDS_init();
+	LEDS_set(LED3);
 
 	/* Setup USB stack */
 	USBD_Init(&initstruct);
@@ -43,53 +42,57 @@ int main(void) {
 	/* Initialize DBUS for communication with FPGA */
 	DBUS_init();
 
-	/* Set up control variables */
+	// /* Set up control variables */
 	// static MSTATE_init_struct_t mstate_initstruct = {
 	// 	.mcuState	=	MSTATE_MCU_WAIT,
-	// 	.bufSelect	=	MSTATE_BUF_SEL_0
+	// 	.bufSelect	=	0
 	// };
 
 	// MSTATE_init(&mstate_initstruct);
+	MSTATE = (MSTATE_MCU_WAIT | MSTATE_BUF_0_RDY | MSTATE_BUF_1_RDY | MSTATE_CUR_BUF_RDY);
 
-	while (state & MSTATE_MCU_WAIT) {
+	LEDS_set(LED2);
+
+	while (MSTATE & MSTATE_MCU_WAIT) {
+		LEDS_set(LED3);
 		/* Wait for msg from USB Host */
 		/* Read is set up in usbcallbacks */
 	}
 
-	/* Send ready to FPGA and enable interrupts on VALID signal */
-	DBUS_start();
+	LEDS_clear(LED3);
 
-	while (state & MSTATE_MCU_RUN) {
-		/* DO NOTHING */
-		/* Everything should be handled by interrupts */
-		/* Do not go into any sleep modes */
+	/* Address of next available memory location in active image buffer */
+	uint8_t* ptr = img_buf0; //(MSTATE & MSTATE_BUF_SEL) ? img_buf1 : img_buf0;
+	/* Because there is no guarantee that the image buffers are contiguous in memory we have to keep track of the idx seperately */
+	uint32_t idx = 0;
+
+	/* Send ready to FPGA */
+	DBUS_set_READY();
+
+	while (MSTATE & MSTATE_MCU_RUN) {
+		if (DBUS_get_VALID() && ((MSTATE & MSTATE_BUF_0_RDY) || (MSTATE & MSTATE_BUF_1_RDY))) {
+				uint16_t data = DBUS_read();
+				ptr[idx++] = (uint8_t) (data >> 8); //(uint8_t) (48 + (data % 8));
+				ptr[idx++] = (uint8_t) (data & 0x00FF); //(uint8_t) (48 + (data % 8));
+		}
+
+		if (idx == BUFFERSIZE_SEND) {
+			if (MSTATE & MSTATE_BUF_SEL) {
+				USBD_Write(EP_IN, img_buf1, BUFFERSIZE_SEND, dataSentCallback);
+				MSTATE &= ~MSTATE_BUF_1_RDY;
+				ptr = img_buf0;
+			} else {
+				USBD_Write(EP_IN, img_buf0, BUFFERSIZE_SEND, dataSentCallback);
+				MSTATE &= ~MSTATE_BUF_0_RDY;
+				ptr = img_buf1;
+			}
+			idx = 0;
+		}
 	}
+
+
 
 	while (1) {
-
+		LEDS_set(LED3);
 	}
 }
-
-void GPIO_ODD_IRQHandler(void) {
-	/**
-	 * TODO: See definicitions of NVIC_* in CMSIS lib. See if they can 
-	 * be optimized (inlining). Believe they already are inlined, but 
-	 * worth a check.
-	 */
-
-	/**
-	 * TODO: Check if we actually need to disable interrupts inside
-	 * interrupt routine. Doubt it.
-	 */
-
-	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
-	NVIC_DisableIRQ(GPIO_ODD_IRQn);
-	
-	/* Write values on data bus to address specified by ptr */
-	DBUS_read_and_store(ptr);
-
-	/* TODO: Keep track of pointer value! If it exceeds buffer space we need to switch buffers */
-
-	NVIC_EnableIRQ(GPIO_ODD_IRQn);
-}
-

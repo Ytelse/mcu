@@ -15,6 +15,7 @@
 #define UNUSED(x) (void) x
 
 #define DBG_OUTPUT_FP "data_received.txt"
+#define DBG_DC_OUTPUT_FP "decompressed_received.txt"
 
 #define RECVTIMEOUT 1000
 #define SENDTIMEOUT 1000
@@ -22,7 +23,7 @@
 #define BUFFERSIZE_R 4096*4
 #define BUFFERSIZE_S 64
 
-#define TEST_DURATION 4.0f
+#define TEST_DURATION 2.0f
 
 enum {SEND, RECV, BOTH};
 
@@ -66,6 +67,10 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	char* buffer = NULL;
+	int read; size_t len;
+	read = getline(&buffer, &len, stdin);
+
 	int recvcount, loopcount;
 	recvcount = loopcount = 0;
 
@@ -74,7 +79,7 @@ int main(int argc, char** argv) {
 	gettimeofday(&start, NULL);
 
 	/* Send start message to MCU */
-	send_async(dev_handle, start_msg, 3);
+	send_async(dev_handle, start_msg, 64);
 	printf("Sent start message!\n");
 	/* Set up first receive from MCU */
 	recv_async(dev_handle, usb_recv_buffer, BUFFERSIZE_R);
@@ -86,9 +91,9 @@ int main(int argc, char** argv) {
 
 		if (!pending_recv) {
 
-			fprintf(f, "%s\n", usb_recv_buffer);
+			fwrite(usb_recv_buffer, sizeof(unsigned char), BUFFERSIZE_R, f);
 			recvcount++;
-			fprintf(stdout, "\rReceived transfers: %d", recvcount);
+			fprintf(stdout, "\rReceived transfers: %d, duration: %.3f, transfer speed: %.3f Mbps", recvcount, s, ((double)recvcount*BUFFERSIZE_R*8/1e6)/s);
 			fflush(stdout);
 			recv_async(dev_handle, usb_recv_buffer, BUFFERSIZE_R);
 		}
@@ -118,7 +123,23 @@ int main(int argc, char** argv) {
 	fprintf(stdout, "Messages received:                   %d\n", recvcount);
 	fprintf(stdout, "Bytes/receive transfer:              %d\n", BUFFERSIZE_R);
 	fprintf(stdout, "Data transferred:                    %f Mb\n", (double)recvcount*BUFFERSIZE_R*8/1e6);
+	fprintf(stdout, "Avg. transfer speed:                 %f Mbps\n", ((double)recvcount*BUFFERSIZE_R*8/1e6)/s);
 	fprintf(stdout, "\x1b[32m========================================================\x1b[0m\n");
+
+	fclose(f);
+
+	fprintf(stdout, "Decompressing data...\n");
+
+	f = fopen(DBG_OUTPUT_FP, "rb");
+	FILE* fout = fopen(DBG_DC_OUTPUT_FP, "w");
+
+	while(!feof(f)) {
+		unsigned char byte = getc(f);
+		putc((unsigned char) ((byte >> 4)), fout); 		// High 4 bits
+		putc((unsigned char) ((byte & 0x0f)), fout);	// Low 4 bits
+	}
+
+	fclose(fout);
 
 	libusb_release_interface(dev_handle, 0);
 	libusb_close(dev_handle);

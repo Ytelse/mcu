@@ -36,10 +36,15 @@ void RTC_IRQHandler(void) {
 
 
 	uint32_t led_mask = 0;
-	led_mask |= (bus_reads > 0x00186A00) ? LED0 : LEDS_NONE; // 1 600 000
-	led_mask |= (bus_reads > 0x001842F0) ? LED1 : LEDS_NONE; // 1 590 000
-	led_mask |= (bus_reads > 0x00181BE0) ? LED2 : LEDS_NONE; // 1 580 000
-	led_mask |= (bus_reads > 0x0017F4D0) ? LED3 : LEDS_NONE; // 1 570 000
+	// led_mask |= (bus_reads > 0x00186A00) ? LED0 : LEDS_NONE; // 1 600 000
+	// led_mask |= (bus_reads > 0x001842F0) ? LED1 : LEDS_NONE; // 1 590 000
+	// led_mask |= (bus_reads > 0x00181BE0) ? LED2 : LEDS_NONE; // 1 580 000
+	// led_mask |= (bus_reads > 0x0017F4D0) ? LED3 : LEDS_NONE; // 1 570 000
+
+	led_mask |= (bus_reads > 400000) ? LED0 : LEDS_NONE;
+	led_mask |= (bus_reads > 300000) ? LED1 : LEDS_NONE;
+	led_mask |= (bus_reads > 200000) ? LED2 : LEDS_NONE;
+	led_mask |= (bus_reads > 100000) ? LED3 : LEDS_NONE;
 
 	LEDS_update_all(led_mask);
 	bus_reads = 0;
@@ -116,15 +121,9 @@ int main(void) {
 
 	/* END LOGIC ANALYZER TRIGGER */
 
-	DBUS_set_READY();
+	DBUS_start();
 
 	while (1) {
-		if (DBUS_get_VALID()) {
-			DBUS_read();
-			bus_reads++;
-		} else {
-			break;
-		}
 	}
 
 	while (1) {
@@ -133,10 +132,29 @@ int main(void) {
 	}
 }
 
-// void GPIO_ODD_IRQHandler(void) {
-// 	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
-// 	NVIC_DisableIRQ(GPIO_ODD_IRQn);
-// 	LEDS_update_all(DBUS_read() << 4);
-// 	NVIC_EnableIRQ(GPIO_ODD_IRQn);
-// }
+void GPIO_ODD_IRQHandler(void) {
+	/**
+	 * TODO: See definicitions of NVIC_* in CMSIS lib. See if they can 
+	 * be optimized (inlining). Believe they already are inlined, but 
+	 * worth a check.
+	 */
+
+	/**
+	 * TODO: Check if we actually need to disable interrupts inside
+	 * interrupt routine. Doubt it.
+	 */
+
+	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+	NVIC_DisableIRQ(GPIO_ODD_IRQn);
+	
+	/* Write values on data bus to address specified by ptr */
+	// DBUS_read_and_store(ptr);
+	DBUS_read();
+	bus_reads++;
+	LEDS_set_all();
+
+	/* TODO: Keep track of pointer value! If it exceeds buffer space we need to switch buffers */
+
+	NVIC_EnableIRQ(GPIO_ODD_IRQn);
+}
 
