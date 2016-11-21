@@ -42,31 +42,23 @@ int main(void) {
 	/* Initialize DBUS for communication with FPGA */
 	DBUS_init();
 
-	// /* Set up control variables */
-	// static MSTATE_init_struct_t mstate_initstruct = {
-	// 	.mcuState	=	MSTATE_MCU_WAIT,
-	// 	.bufSelect	=	0
-	// };
-
-	// MSTATE_init(&mstate_initstruct);
+	/* Set initial state */
 	MSTATE = (MSTATE_MCU_WAIT | MSTATE_BUF_0_RDY | MSTATE_BUF_1_RDY | MSTATE_CUR_BUF_RDY);
 
 	LEDS_set(LED2);
 
 	while (MSTATE & MSTATE_MCU_WAIT) {
-		LEDS_set(LED3);
-		/* Wait for msg from USB Host */
-		/* Read is set up in usbcallbacks */
+		/* Wait until notified by USB host */
 	}
 
 	LEDS_clear(LED3);
 
 	/* Address of next available memory location in active image buffer */
-	uint8_t* ptr = img_buf0; //(MSTATE & MSTATE_BUF_SEL) ? img_buf1 : img_buf0;
+	uint8_t* ptr = img_buf0;
 	/* Because there is no guarantee that the image buffers are contiguous in memory we have to keep track of the idx seperately */
 	uint32_t idx = 0;
 
-	/* Send ready to FPGA */
+	/* Send ready to FPGA in order to initiate communication */
 	DBUS_set_READY();
 
 	while (MSTATE & MSTATE_MCU_RUN) {
@@ -89,8 +81,6 @@ int main(void) {
 			idx = 0;
 		}
 	}
-
-
 
 	while (1) {
 		LEDS_set(LED3);

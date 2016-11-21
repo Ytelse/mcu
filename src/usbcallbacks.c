@@ -1,12 +1,6 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
 #include "em_device.h"
 #include "em_chip.h"
-#include "em_cmu.h"
 #include "em_usb.h"
-#include "em_gpio.h"
 
 #include "defs.h"
 
@@ -34,23 +28,6 @@ int dataSentCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remai
 	
 	UNUSED(xferred);
 	UNUSED(remaining);
-
-	// if (status == USB_STATUS_OK) {
-	// 	if ((MSTATE & MSTATE_BUF_SEL) && (MSTATE & MSTATE_BUF_0_FULL)) {
-	// 		MSTATE &= ~MSTATE_BUF_0_FULL;
-	// 		MSTATE |= MSTATE_BUF_0_RDY;
-	// 		LEDS_set(LED0);
-	// 	} else if (!(MSTATE & MSTATE_BUF_SEL) && (MSTATE & MSTATE_BUF_1_FULL)) {
-	// 		MSTATE &= ~MSTATE_BUF_1_FULL;
-	// 		MSTATE |= MSTATE_BUF_1_RDY;
-	// 		LEDS_set(LED1);
-	// 	} else {
-	// 		/* If none of these something has gone wrong and we need to halt */
-	// 		LEDS_update_all(LED0 | LED3);
-	// 		MSTATE |= MSTATE_MCU_HALT;
-	// 		MSTATE &= ~MSTATE_MCU_RUN;
-	// 	}
-	// }
 
 	if (status == USB_STATUS_OK) {
 		if (MSTATE & MSTATE_BUF_SEL) {
