@@ -42,27 +42,3 @@ void DBUS_init(void) {
   		 			true);  				/* enable */
 	
 }
-
-/* ======================================================== */
-/* =           APPLICATION SPECIFIC FUNCTIONS             = */
-/* ======================================================== */
-
-/* Start communication with FPGA */
-
-void DBUS_start(void) {
-	/* Enable GPIO interrupts */
-	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
-	NVIC_EnableIRQ(GPIO_ODD_IRQn);
-	/* Signal FPGA that we are ready to receive data */
-	DBUS_set_READY();
-}
-
-/* Completely stop communication with FPGA */
-
-void DBUS_stop(void) {
-	/* Disable GPIO interrupts */
-	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
-	NVIC_DisableIRQ(GPIO_ODD_IRQn);
-	/* Signal FPGA that we will no longer read any data */
-	DBUS_clear_READY();
-}
