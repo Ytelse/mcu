@@ -62,24 +62,33 @@ int main(void) {
 	DBUS_set_READY();
 
 	while (MSTATE & MSTATE_MCU_RUN) {
-		if (DBUS_get_VALID() && ((MSTATE & MSTATE_BUF_0_RDY) || (MSTATE & MSTATE_BUF_1_RDY))) {
-				uint16_t data = DBUS_read();
-				ptr[idx++] = (uint8_t) (data >> 8); //(uint8_t) (48 + (data % 8));
-				ptr[idx++] = (uint8_t) (data & 0x00FF); //(uint8_t) (48 + (data % 8));
-		}
-
-		if (idx == BUFFERSIZE_SEND) {
-			if (MSTATE & MSTATE_BUF_SEL) {
-				USBD_Write(EP_IN, img_buf1, BUFFERSIZE_SEND, dataSentCallback);
-				MSTATE &= ~MSTATE_BUF_1_RDY;
-				ptr = img_buf0;
-			} else {
+		if (DBUS_get_VALID() && (MSTATE & (MSTATE_BUF_0_RDY))) { // | MSTATE_BUF_1_RDY))) {
+			uint16_t data = DBUS_read();
+			ptr[idx++] = (uint8_t) (data >> 8);
+			ptr[idx++] = (uint8_t) (data & 0x00FF);
+			
+			if (idx == BUFFERSIZE_SEND) {
 				USBD_Write(EP_IN, img_buf0, BUFFERSIZE_SEND, dataSentCallback);
 				MSTATE &= ~MSTATE_BUF_0_RDY;
-				ptr = img_buf1;
+				idx = 0;
 			}
-			idx = 0;
 		}
+
+		// if (idx == BUFFERSIZE_SEND) {
+		// 	USBD_Write(EP_IN, img_buf0, BUFFERSIZE_SEND, dataSentCallback);
+		// 	MSTATE &= ~MSTATE_BUF_0_RDY;
+		// 	if (MSTATE & MSTATE_BUF_SEL) {
+		// 		USBD_Write(EP_IN, img_buf1, BUFFERSIZE_SEND, dataSentCallback);
+		// 		MSTATE &= ~(MSTATE_BUF_1_RDY | MSTATE_BUF_SEL);
+		// 		ptr = img_buf0;
+		// 	} else {
+		// 		USBD_Write(EP_IN, img_buf0, BUFFERSIZE_SEND, dataSentCallback);
+		// 		MSTATE &= ~MSTATE_BUF_0_RDY;
+		// 		MSTATE |= MSTATE_BUF_SEL;
+		// 		ptr = img_buf1;
+		// 	}
+		// 	idx = 0;
+		// }
 	}
 
 	while (1) {

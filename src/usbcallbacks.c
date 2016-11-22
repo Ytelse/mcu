@@ -30,15 +30,16 @@ int dataSentCallback(USB_Status_TypeDef status, uint32_t xferred, uint32_t remai
 	UNUSED(remaining);
 
 	if (status == USB_STATUS_OK) {
-		if (MSTATE & MSTATE_BUF_SEL) {
-			MSTATE |= MSTATE_BUF_1_RDY;
-			LEDS_set(LED1);
-			LEDS_clear(LED0);
-		} else {
-			MSTATE |= MSTATE_BUF_0_RDY;
-			LEDS_set(LED0);
-			LEDS_clear(LED1);
-		}
+		MSTATE |= MSTATE_BUF_0_RDY;
+		// if (MSTATE & MSTATE_BUF_SEL) {
+		// 	MSTATE |= MSTATE_BUF_1_RDY;
+		// 	// LEDS_set(LED1);
+		// 	// LEDS_clear(LED0);
+		// } else {
+		// 	MSTATE |= MSTATE_BUF_0_RDY;
+		// 	// LEDS_set(LED0);
+		// 	// LEDS_clear(LED1);
+		// }
 	}
 
 	return USB_STATUS_OK;
